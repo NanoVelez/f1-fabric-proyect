@@ -205,3 +205,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Ignore Data (Data Engineering Rules)
+*.parquet
+*.csv
+*.avro
+data/*.json
+
+# Microsoft Fabric Specifics
+.nb-config
+.fabric/
+
+# Seguridad Extra
+secrets.yaml
+credentials.json
