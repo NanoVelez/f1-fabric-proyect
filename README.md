@@ -21,22 +21,22 @@ graph LR
     D -->|Direct Lake| E[Power BI Dashboard]
 ```
 
-A: Bronze (Raw): Landing zone for raw JSON data from the API.
+* **Bronze (Raw):** Landing zone for raw JSON data from the API.
 
-B: Silver (Cleaned): Data is deduplicated, typed, and stored as Delta Parquet tables.
+* **Silver (Cleaned):** Data is deduplicated, typed, and stored as Delta Parquet tables.
 
-C: Gold (Curated): Business-level aggregations and Dimensional Modeling (Star Schema).
+* **Gold (Curated):** Business-level aggregations and Dimensional Modeling (Star Schema).
 
 ## 🛠️ Tech Stack
-**Cloud Platform:** Microsoft Fabric (Data Engineering & Data Warehouse).
+* **Cloud Platform:** Microsoft Fabric (Data Engineering & Data Warehouse).
 
-**Storage:** OneLake (ADLS Gen2).
+* **Storage:** OneLake (ADLS Gen2).
 
-**Compute:** Spark Pools (PySpark) & T-SQL.
+* **Compute:** Spark Pools (PySpark) & T-SQL.
 
-**Orchestration:** Fabric Data Factory Pipelines.
+* **Orchestration:** Fabric Data Factory Pipelines.
 
-**Source:** OpenF1 API.
+* **Source:** OpenF1 API.
 
 ## 🚀 Roadmap & Progress
 [x] Environment Setup (Fabric + GitHub).
