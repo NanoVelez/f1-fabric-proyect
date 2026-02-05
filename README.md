@@ -79,6 +79,7 @@ f1-fabric-proyect/
 │   ├── 02_transform/     # Bronze -> Silver (Delta Tables)
 │   └── 03_analysis/      # Silver -> Gold (Aggregations)
 │
+├── 📂 assets/             # Static resources (images, schemas)
 ├── 📂 src/                # Reusable Python modules/functions
 ├── 📂 data/               # Sample data (excluded from git via .gitignore)
 ├── .gitignore            # Security configuration
