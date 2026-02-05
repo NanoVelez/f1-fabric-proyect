@@ -22,6 +22,7 @@
 
 # CELL ********************
 
+# --- CELL 1: DRIVERS TRANSFORMATION ---
 from pyspark.sql.functions import input_file_name, col, split, element_at, current_timestamp, lit
 
 # --- CONFIGURATION ---
@@ -56,6 +57,92 @@ df_silver_sorted = df_silver.orderBy("race_folder_name", "position")
 df_silver_sorted.write.mode("overwrite").format("delta").saveAsTable(TABLE_NAME)
 
 print("Table created successfully!")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# --- CELL 2: TEAMS TRANSFORMATION (CORRECTED) ---
+
+# --- CONFIGURATION ---
+INPUT_PATH_TEAMS = f"Files/bronze/{YEAR}/*/teams_standings.json"
+TABLE_NAME_TEAMS = "silver_teams_standings"
+
+# --- 1. READ ---
+print(f"Reading Teams files from: {INPUT_PATH_TEAMS}...")
+df_teams_raw = spark.read.json(INPUT_PATH_TEAMS)
+
+# --- 2. TRANSFORMATION ---
+print("Transforming Teams data...")
+
+df_teams_silver = df_teams_raw.select(
+    # A. Business Columns
+    col("position_current").cast("int").alias("position"),
+    col("points_current").cast("float").alias("points"),
+    col("team_name"),  # Este será tu identificador principal
+    # col("team_key").cast("long"),  <-- LINEA ELIMINADA PORQUE NO EXISTE EN EL JSON
+    col("session_key").cast("long"),
+    col("meeting_key").cast("long"),
+    
+    # B. Data Engineering
+    element_at(split(input_file_name(), "/"), -2).alias("race_folder_name"),
+    current_timestamp().alias("ingestion_date"),
+    lit(YEAR).alias("season_year")
+)
+
+# --- 3. WRITE ---
+print(f"Saving Delta table: {TABLE_NAME_TEAMS}...")
+df_teams_silver.orderBy("race_folder_name", "position") \
+    .write.mode("overwrite").format("delta").saveAsTable(TABLE_NAME_TEAMS)
+
+print("Teams table created successfully!")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# --- CELL 3: CIRCUITS TRANSFORMATION (FILTERED) ---
+
+# --- CONFIGURATION ---
+INPUT_PATH_CIRCUITS = f"Files/bronze/{YEAR}/circuits.json"
+TABLE_NAME_CIRCUITS = "silver_circuits"
+
+# --- 1. READ ---
+print(f"Reading Circuits master file from: {INPUT_PATH_CIRCUITS}...")
+df_circuits_raw = spark.read.json(INPUT_PATH_CIRCUITS)
+
+# --- 2. TRANSFORMATION ---
+print("Transforming Circuits data...")
+
+df_filtered = df_circuits_raw.filter(~col("meeting_name").contains("Testing"))
+
+df_circuits_silver = df_filtered.select(
+    col("meeting_key").cast("long"),
+    col("meeting_name").alias("gp_name"),
+    col("location").alias("city"),
+    col("country_name").alias("country"),
+    col("circuit_short_name").alias("circuit"),
+    col("date_start").cast("timestamp"),
+    col("year").cast("int"),
+    current_timestamp().alias("ingestion_date")
+)
+
+# --- 3. WRITE ---
+print(f"Saving Delta table: {TABLE_NAME_CIRCUITS}...")
+df_circuits_silver.orderBy("date_start") \
+    .write.mode("overwrite").format("delta").saveAsTable(TABLE_NAME_CIRCUITS)
+
+print("Circuits table created successfully!")
 
 # METADATA ********************
 
