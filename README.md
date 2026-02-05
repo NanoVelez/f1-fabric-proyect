@@ -14,13 +14,9 @@ The main goal is to apply **DP-600 (Fabric Analytics Engineer)** certification c
 ## 🏗️ Architecture (Medallion)
 The data flows from the API through a structured Lakehouse architecture:
 
-```mermaid
-graph LR
-    A[OpenF1 API] -->|JSON Ingestion| B[("Bronze Layer<br/>Raw Files")]
-    B -->|PySpark Cleaning| C[("Silver Layer<br/>Delta Tables")]
-    C -->|SQL Aggregation| D[("Gold Layer<br/>Star Schema")]
-    D -->|Direct Lake| E[Power BI Dashboard]
-```
+<div align="center">
+  <img src="mermaid-architecture_medallion.png" alt="Architecture Diagram" width="800"/>
+</div>
 
 * **Bronze (Raw):** Landing zone for raw JSON data from the API.
 
