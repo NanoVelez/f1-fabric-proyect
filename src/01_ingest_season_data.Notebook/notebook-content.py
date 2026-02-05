@@ -87,6 +87,10 @@ for meeting in meetings_sorted:
         # Download Teams Standings
         url_t = f"{BASE_URL}/championship_teams?session_key={session_key}"
         mssparkutils.fs.put(f"{base_path}/teams_standings.json", json.dumps(requests.get(url_t).json()), True)
+
+        # Download Drivers Roster
+        url_dr = f"{BASE_URL}/drivers?session_key={session_key}"
+        mssparkutils.fs.put(f"{base_path}/drivers.json", json.dumps(requests.get(url_dr).json()), True)
         
         # Only increment counter if successful
         round_counter += 1

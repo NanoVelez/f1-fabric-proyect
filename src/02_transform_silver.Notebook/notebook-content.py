@@ -150,3 +150,41 @@ print("Circuits table created successfully!")
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# CELL ********************
+
+# --- CELL 4: DRIVERS DIMENSION ---
+
+# --- CONFIGURATION ---
+INPUT_PATH_DRIVERS = f"Files/bronze/{YEAR}/*/drivers.json"
+TABLE_NAME_DRIVERS = "silver_drivers"
+
+# --- 1. READ ---
+print(f"Reading Drivers catalog from: {INPUT_PATH_DRIVERS}...")
+df_drivers_raw = spark.read.json(INPUT_PATH_DRIVERS)
+
+# --- 2. TRANSFORMATION ---
+print("Creating unique drivers list...")
+
+df_drivers_silver = df_drivers_raw.select(
+    col("driver_number").cast("int"),
+    col("full_name"),
+    col("name_acronym"),
+    col("team_name"),       
+    col("headshot_url"),    
+    col("country_code"),
+    current_timestamp().alias("ingestion_date")
+).dropDuplicates(["driver_number"]) 
+
+# --- 3. WRITE ---
+print(f"Saving Delta table: {TABLE_NAME_DRIVERS}...")
+df_drivers_silver.write.mode("overwrite").format("delta").saveAsTable(TABLE_NAME_DRIVERS)
+
+print("Drivers Dimension created successfully!")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
