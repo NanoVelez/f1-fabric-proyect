@@ -48,10 +48,10 @@ The data flows from the API through a structured Lakehouse architecture:
     - [x] Constructors Data
     - [x] Circuits Data
     
-- [ ] **Phase 4: Gold Layer Modeling (Dimensions & Facts)**
-    - [ ] Drivers Data
-    - [ ] Constructors Data
-    - [ ] Circuits Data
+- [x] **Phase 4: Gold Layer Modeling (Dimensions & Facts)**
+    - [x] Drivers Data
+    - [x] Constructors Data
+    - [x] Circuits Data
 
 - [ ] **Phase 5: Final Dashboard in Power BI**
     - [ ] Drivers Data
