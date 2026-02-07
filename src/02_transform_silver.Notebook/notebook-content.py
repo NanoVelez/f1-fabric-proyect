@@ -51,7 +51,7 @@ df_silver = df_raw.select(
     
     # B. Data Engineering
     element_at(split(input_file_name(), "/"), -2).alias("race_folder_name"),
-    element_at(split(input_file_name(), "/"), -3).cast("int").alias("season_year"),
+    element_at(split(input_file_name(), "/"), -3).cast("int").alias("year"),
     
     current_timestamp().alias("ingestion_date")
 ).na.drop(subset=["driver_number", "position"])
@@ -63,7 +63,7 @@ df_silver.write \
     .mode("overwrite") \
     .option("overwriteSchema", "true") \
     .format("delta") \
-    .partitionBy("season_year") \
+    .partitionBy("year") \
     .saveAsTable(TABLE_NAME)
 
 print(f"Drivers Standings table created! Total rows: {df_silver.count()}")
@@ -100,7 +100,7 @@ df_teams_silver = df_teams_raw.select(
 
     # Data Engineering
     element_at(split(input_file_name(), "/"), -2).alias("race_folder_name"),
-    element_at(split(input_file_name(), "/"), -3).cast("int").alias("season_year"),
+    element_at(split(input_file_name(), "/"), -3).cast("int").alias("year"),
     current_timestamp().alias("ingestion_date")
 ).withColumn(
     "team_logo_url", 
@@ -116,7 +116,7 @@ df_teams_silver.write \
     .mode("overwrite") \
     .option("overwriteSchema", "true") \
     .format("delta") \
-    .partitionBy("season_year") \
+    .partitionBy("year") \
     .saveAsTable(TABLE_NAME_TEAMS)
 
 print("Silver Teams")
@@ -204,7 +204,7 @@ print("Creating drivers history list with COLORS...")
 
 from pyspark.sql.functions import col, when, lit, current_timestamp, concat, input_file_name, regexp_extract
 
-df_drivers_with_year = df_drivers_raw.withColumn("season", regexp_extract(input_file_name(), r"bronze/(\d{4})/", 1).cast("int"))
+df_drivers_with_year = df_drivers_raw.withColumn("year", regexp_extract(input_file_name(), r"bronze/(\d{4})/", 1).cast("int"))
 
 df_drivers_silver = df_drivers_with_year.select(
     col("driver_number").cast("int"),
@@ -218,12 +218,12 @@ df_drivers_silver = df_drivers_with_year.select(
     .otherwise(concat(lit("#"), col("team_colour"))) 
     .alias("team_colour"),
     
-    col("season") 
+    col("year") 
 ).withColumn("headshot_url", 
     when((col("headshot_url").isNull()) | (col("headshot_url") == ""), lit(DEFAULT_PHOTO_URL))
     .otherwise(col("headshot_url"))
 ).withColumn("ingestion_date", current_timestamp()
-).dropDuplicates(["driver_number", "season"])
+).dropDuplicates(["driver_number", "year"])
 
 # --- 3. WRITE ---
 print(f"Saving Delta table: {TABLE_NAME_DRIVERS}...")
@@ -232,7 +232,7 @@ df_drivers_silver.write \
     .mode("overwrite") \
     .option("overwriteSchema", "true") \
     .format("delta") \
-    .partitionBy("season") \
+    .partitionBy("year") \
     .saveAsTable(TABLE_NAME_DRIVERS)
 
 print(f"Drivers Dimension created successfully! Rows: {df_drivers_silver.count()}")

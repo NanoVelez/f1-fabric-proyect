@@ -296,3 +296,152 @@ print(f"✅ Tabla '{TABLE_NAME_DIM}' creada exitosamente.")
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# CELL ********************
+
+# --- CELL: DIMENSIONS (Driver, Team, Circuit) ---
+from pyspark.sql.functions import col
+
+# 1. DIM DRIVER (Solo quién es y su foto)
+spark.table("silver_drivers") \
+    .select(
+        col("full_name").alias("Driver"),
+        col("headshot_url").alias("Driver_Photo"),
+        col("country_code").alias("Driver_Country")
+    ).distinct() \
+    .write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_dim_driver")
+
+# 2. DIM TEAM (Solo quién es, logo y color)
+spark.table("silver_teams_standings") \
+    .join(spark.table("silver_drivers"), "team_name") \
+    .select(
+        col("team_name").alias("Team"),
+        col("team_logo_url").alias("Team_Logo"),
+        col("team_colour").alias("Hex_Color")
+    ).distinct() \
+    .write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_dim_team")
+
+# 3. DIM CIRCUIT (Nueva: Para limpiar las Facts)
+spark.table("silver_circuits") \
+    .select(
+        col("gp_code").alias("GP_Code"), # Tu clave de 3 letras
+        col("gp_name").alias("Grand_Prix"),
+        col("circuit").alias("Circuit_Name"),
+        col("country").alias("Country")
+    ).distinct() \
+    .write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_dim_circuit")
+
+print("✅ Dimensiones creadas y limpias.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# --- CELL: FACT DRIVER RESULTS (Optimizada) ---
+from pyspark.sql.window import Window
+from pyspark.sql.functions import col, lag, sum as _sum
+
+# Cargamos tablas Silver
+df_standings = spark.table("silver_drivers_standings")
+df_circuits = spark.table("silver_circuits")
+df_drivers = spark.table("silver_drivers")  # La cargo aquí para tenerlo ordenado
+
+# Cálculo de Puntos por Carrera
+w = Window.partitionBy("driver_number", "year").orderBy("date_start")
+
+# AQUI ESTA EL CAMBIO (Opción 1 applied)
+# Al poner ["meeting_key", "year"], Spark fusiona las columnas year de ambas tablas.
+df_fact = df_standings.join(df_circuits, ["meeting_key", "year"], "inner") \
+    .withColumn("prev_points", lag("points", 1, 0).over(w)) \
+    .withColumn("Race_Points", (col("points") - col("prev_points")).cast("float")) \
+    .join(df_drivers, ["driver_number", "year"], "inner") \
+    .select(
+        col("year").alias("Year"),
+        col("full_name").alias("Driver"),
+        col("team_name").alias("Team"),  # Asegúrate que team_name esté en drivers o standings
+        col("gp_code").alias("GP_Code"),
+        col("date_start").alias("Date"),
+        col("position").alias("Position"),
+        col("Race_Points").alias("Points") 
+    )
+
+df_fact.orderBy("Date", "Position") \
+    .write.mode("overwrite").option("overwriteSchema", "true") \
+    .partitionBy("Year") \
+    .saveAsTable("gold_fact_driver_results")
+
+print("✅ Tabla de Hechos optimizada creada.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# --- CELL: FACT TEAM RESULTS (Constructors) ---
+from pyspark.sql.window import Window
+from pyspark.sql.functions import col, lag, sum as _sum
+
+print("Generando Fact Team Results...")
+
+# 1. Cargamos las tablas Silver
+df_team_standings = spark.table("silver_teams_standings")
+df_circuits = spark.table("silver_circuits")
+
+# 2. Unimos con Circuitos para tener la Fecha y el Código de País
+#    (Necesario para ordenar cronológicamente)
+df_joined = df_team_standings.join(
+    df_circuits.select("meeting_key", "date_start", "gp_code"), 
+    on="meeting_key", 
+    how="inner"
+)
+
+# 3. Cálculo Diferencial (Reverse Engineering) 🧮
+#    Restamos los puntos de la carrera anterior para sacar los de "hoy".
+w_team_calc = Window.partitionBy("team_name", "year").orderBy("date_start")
+
+df_calculated = df_joined.withColumn("prev_points", lag("points", 1, 0).over(w_team_calc)) \
+    .withColumn("Race_Points", (col("points") - col("prev_points")).cast("float"))
+
+# 4. Selección Limpia (Solo claves y hechos)
+df_fact_team = df_calculated.select(
+    # CLAVES (Para unir con Dims)
+    col("year").alias("Year"),
+    col("date_start").alias("Date"),
+    col("gp_code").alias("GP_Code"),
+    col("team_name").alias("Team"), # Clave para unir con gold_dim_team
+    
+    # HECHOS (Datos numéricos)
+    col("position").alias("Position"),
+    col("Race_Points").alias("Points")
+)
+
+# 5. Guardado
+TABLE_NAME_FACT_TEAM = "gold_fact_team_results"
+
+print(f"Guardando {TABLE_NAME_FACT_TEAM}...")
+
+df_fact_team.orderBy("Date", "Position") \
+    .write \
+    .mode("overwrite") \
+    .option("overwriteSchema", "true") \
+    .format("delta") \
+    .partitionBy("Year") \
+    .saveAsTable(TABLE_NAME_FACT_TEAM)
+
+print("✅ Tabla de Hechos de Equipos creada exitosamente.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
