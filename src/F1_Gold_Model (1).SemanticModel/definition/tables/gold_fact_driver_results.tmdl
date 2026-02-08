@@ -1,0 +1,177 @@
+table gold_fact_driver_results
+	lineageTag: 330adf25-33fe-4187-a313-8246f31e3beb
+	sourceLineageTag: [dbo].[gold_fact_driver_results]
+
+	measure 'Driver Points Standings' = ```
+			
+			VAR UltimoMeetingID = MAX(gold_fact_driver_results[meeting_key])
+			RETURN 
+			CALCULATE(
+			    SUM(gold_fact_driver_results[Season_Points]), 
+			    KEEPFILTERS(gold_fact_driver_results[meeting_key] = UltimoMeetingID),
+			    ALL(gold_dim_circuit) -- O el nombre que tenga tu tabla de circuitos/carreras
+			)
+			```
+		lineageTag: 89ddd7ab-566b-4f38-a95e-4df2345a4c60
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Driver Rank Standings' = ```
+			
+			VAR UltimoMeeting = MAX(gold_fact_driver_results[meeting_key])
+			RETURN 
+			CALCULATE(
+			    MAX(gold_fact_driver_results[World_Position]),
+			    gold_fact_driver_results[meeting_key] = UltimoMeeting
+			)
+			```
+		formatString: 0
+		lineageTag: d32c689b-5a38-4861-b639-9d0f25fc0006
+
+		changedProperty = Name
+
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: d749345d-076c-45fb-98e1-6a827a705dd3
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SummarizeBy
+
+		changedProperty = FormatString
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		sourceProviderType: datetime2
+		lineageTag: a3694b40-0f04-479a-bc8d-e46788e4a630
+		sourceLineageTag: Date
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = DataType
+
+		changedProperty = FormatString
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	column 'Driver ID'
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 09380af9-00eb-4c34-9ecf-164954c269d7
+		sourceLineageTag: Driver_ID
+		summarizeBy: none
+		sourceColumn: Driver_ID
+
+		changedProperty = Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Team ID'
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: abadd6f0-bb00-46f3-98bc-19a8d7a98867
+		sourceLineageTag: Team_ID
+		summarizeBy: none
+		sourceColumn: Team_ID
+
+		changedProperty = Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Race_Points
+		dataType: double
+		formatString: " 0.##;;-"
+		sourceProviderType: real
+		lineageTag: 6831189b-90c7-478f-bed9-d54e9c7bebe2
+		sourceLineageTag: Race_Points
+		summarizeBy: sum
+		sourceColumn: Race_Points
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	column Season_Points
+		dataType: double
+		isHidden
+		sourceProviderType: real
+		lineageTag: 9c2ee9d8-e8fc-492f-8ac0-82cd12efa908
+		sourceLineageTag: Season_Points
+		summarizeBy: max
+		sourceColumn: Season_Points
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column World_Position
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: ea6edaef-cc24-4d6e-82b8-1fe121bfed93
+		sourceLineageTag: World_Position
+		summarizeBy: none
+		sourceColumn: World_Position
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column meeting_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 430f1358-fd86-4c47-bc0f-a065c76dabdc
+		sourceLineageTag: meeting_key
+		summarizeBy: none
+		sourceColumn: meeting_key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition gold_fact_driver_results = entity
+		mode: directLake
+		source
+			entityName: gold_fact_driver_results
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

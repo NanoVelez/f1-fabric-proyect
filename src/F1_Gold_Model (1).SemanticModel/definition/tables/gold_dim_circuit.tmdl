@@ -1,0 +1,119 @@
+table gold_dim_circuit
+	lineageTag: ad957b6f-cec5-4798-ac8c-2a63340c215b
+	sourceLineageTag: [dbo].[gold_dim_circuit]
+
+	column 'Grand Prix'
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 44bcf4b3-f0fa-4a6e-9423-f5b985659b48
+		sourceLineageTag: Grand_Prix
+		summarizeBy: none
+		sourceColumn: Grand_Prix
+		sortByColumn: Order_Date
+
+		changedProperty = Name
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Circuit Name'
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 10545ab2-6694-498d-a570-9548442eefd6
+		sourceLineageTag: Circuit_Name
+		dataCategory: Place
+		summarizeBy: none
+		sourceColumn: Circuit_Name
+
+		changedProperty = DataCategory
+
+		changedProperty = Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Order_Date
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 64bc5275-944d-4ba8-b094-47469e1bf198
+		sourceLineageTag: Order_Date
+		summarizeBy: none
+		sourceColumn: Order_Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column GP_Display
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 937be821-603e-41c7-b71f-f1f4fe206556
+		sourceLineageTag: GP_Display
+		summarizeBy: none
+		sourceColumn: GP_Display
+		sortByColumn: Order_Date
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column meeting_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: acf6244f-d5a8-441c-89ed-7dc54a586e95
+		sourceLineageTag: meeting_key
+		summarizeBy: none
+		sourceColumn: meeting_key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 87e40eaf-9079-49a7-b880-26060e31c3e6
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 189c1f84-680b-4154-bf48-2db17a40903e
+		sourceLineageTag: Date
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_dim_circuit = entity
+		mode: directLake
+		source
+			entityName: gold_dim_circuit
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

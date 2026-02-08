@@ -1,0 +1,162 @@
+table gold_fact_team_results
+	lineageTag: 2bf5b417-fe98-4904-807d-8771244f6d17
+	sourceLineageTag: [dbo].[gold_fact_team_results]
+
+	measure 'Team Points Standings' = ```
+			
+			VAR UltimoMeetingID = MAX(gold_fact_team_results[meeting_key])
+			RETURN 
+			CALCULATE(
+			    SUM(gold_fact_team_results[Season_Points]), 
+			    KEEPFILTERS(gold_fact_team_results[meeting_key] = UltimoMeetingID),
+			    ALL(gold_dim_circuit) -- O el nombre que tenga tu tabla de circuitos/carreras
+			)
+			```
+		lineageTag: d1060563-b929-499b-a091-6e90b9e2261a
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Team Rank Standings' = ```
+			
+			VAR UltimoMeeting = MAX(gold_fact_team_results[meeting_key])
+			RETURN 
+			CALCULATE(
+			    MAX(gold_fact_team_results[World_Position]),
+			    gold_fact_team_results[meeting_key] = UltimoMeeting
+			)
+			```
+		formatString: 0
+		lineageTag: 8083985e-cc8b-4d18-bed8-16a785295ab0
+
+		changedProperty = Name
+
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 2f4e6dcb-3d9f-4227-9472-2d62c403275a
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SummarizeBy
+
+		changedProperty = FormatString
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		sourceProviderType: datetime2
+		lineageTag: be56e5b3-ed0c-4727-a5db-eea916e8ff4a
+		sourceLineageTag: Date
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = DataType
+
+		changedProperty = FormatString
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	column 'Team ID'
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: b23e3229-bfe3-4352-b736-c5327172e1b7
+		sourceLineageTag: Team_ID
+		summarizeBy: none
+		sourceColumn: Team_ID
+
+		changedProperty = Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Race_Points
+		dataType: double
+		isHidden
+		sourceProviderType: real
+		lineageTag: de566169-56da-4f09-ac68-335c49062100
+		sourceLineageTag: Race_Points
+		summarizeBy: sum
+		sourceColumn: Race_Points
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Season_Points
+		dataType: double
+		isHidden
+		sourceProviderType: real
+		lineageTag: 4520f1f0-840a-4bb2-a40e-493fa967cfd3
+		sourceLineageTag: Season_Points
+		summarizeBy: max
+		sourceColumn: Season_Points
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column World_Position
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 6af5e220-9468-4c09-a6a0-4b4e79701ed5
+		sourceLineageTag: World_Position
+		summarizeBy: none
+		sourceColumn: World_Position
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column meeting_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 35640240-2bbd-4c95-be11-7adacbfb4c2f
+		sourceLineageTag: meeting_key
+		summarizeBy: none
+		sourceColumn: meeting_key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition gold_fact_team_results = entity
+		mode: directLake
+		source
+			entityName: gold_fact_team_results
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

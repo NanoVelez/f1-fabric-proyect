@@ -1,0 +1,26 @@
+table gold_dim_year
+	lineageTag: 5c5ae51b-58b2-4ddc-9e4a-c14ca386f846
+	sourceLineageTag: [dbo].[gold_dim_year]
+
+	column Year
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 89358530-ce4a-4f5c-89cc-384287f11207
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
+	partition gold_dim_year = entity
+		mode: directLake
+		source
+			entityName: gold_dim_year
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

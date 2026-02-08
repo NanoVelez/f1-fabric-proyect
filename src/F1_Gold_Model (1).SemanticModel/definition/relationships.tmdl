@@ -1,0 +1,28 @@
+relationship c65b0c80-79c4-39e7-32d2-1f3d8d64b06c
+	fromColumn: gold_fact_team_results.'Team ID'
+	toColumn: gold_dim_team.'Team ID'
+
+relationship c5cc715b-c01d-d9e1-cc04-e7d2bfc3f2b7
+	fromColumn: gold_fact_driver_results.'Driver ID'
+	toColumn: gold_dim_driver.'Driver ID'
+
+relationship 7893fbc2-0f6f-b3a9-0dd6-9d26813e0414
+	fromColumn: gold_fact_driver_results.'Team ID'
+	toColumn: gold_dim_team.'Team ID'
+
+relationship 1a036be8-090f-7647-2d12-c6794b3191a9
+	fromColumn: gold_fact_driver_results.meeting_key
+	toColumn: gold_dim_circuit.meeting_key
+
+relationship 784a267a-c735-4274-2421-6290ff9b8305
+	fromColumn: gold_fact_team_results.meeting_key
+	toColumn: gold_dim_circuit.meeting_key
+
+relationship 10d69565-1406-63fd-a4bb-24f9b6fd8aa5
+	fromColumn: gold_fact_driver_results.Year
+	toColumn: gold_dim_year.Year
+
+relationship 46d5da2a-1dc9-ad13-924d-11c778579cb9
+	fromColumn: gold_fact_team_results.Year
+	toColumn: gold_dim_year.Year
+
