@@ -2,10 +2,6 @@ relationship c65b0c80-79c4-39e7-32d2-1f3d8d64b06c
 	fromColumn: gold_fact_team_results.'Team ID'
 	toColumn: gold_dim_team.'Team ID'
 
-relationship c5cc715b-c01d-d9e1-cc04-e7d2bfc3f2b7
-	fromColumn: gold_fact_driver_results.'Driver ID'
-	toColumn: gold_dim_driver.'Driver ID'
-
 relationship 4e912deb-83b8-4e54-79b7-7fa34e2f11c3
 	fromColumn: gold_fact_driver_results.meeting_key
 	toColumn: gold_dim_race.meeting_key
@@ -21,4 +17,8 @@ relationship 96e348ae-5c3d-6d0c-43d6-21bde1d21a5e
 relationship fd78d55c-8ee3-a241-001b-f91baf256148
 	fromColumn: gold_ui_play_timeline.meeting_key
 	toColumn: gold_dim_race.meeting_key
+
+relationship 2e4362aa-b46b-fbf7-c6f2-de8918241cd6
+	fromColumn: gold_fact_driver_results.Driver_Key
+	toColumn: gold_dim_driver.Driver_Key
 

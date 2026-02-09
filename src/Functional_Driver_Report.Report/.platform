@@ -1,11 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
-    "type": "SemanticModel",
-    "displayName": "F1_Gold_Model"
+    "type": "Report",
+    "displayName": "Functional_Driver_Report"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "6c5d087b-1820-96b7-4d27-96f201eacc90"
+    "logicalId": "3d77287a-79d3-bebb-4ba7-c9ee7f83ca7c"
   }
 }

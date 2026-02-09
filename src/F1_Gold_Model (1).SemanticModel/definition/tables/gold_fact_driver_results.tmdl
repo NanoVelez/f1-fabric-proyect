@@ -2,22 +2,6 @@ table gold_fact_driver_results
 	lineageTag: 330adf25-33fe-4187-a313-8246f31e3beb
 	sourceLineageTag: [dbo].[gold_fact_driver_results]
 
-	measure 'Driver Points Standings' = ```
-			
-			VAR UltimoMeetingID = MAX(gold_fact_driver_results[meeting_key])
-			RETURN 
-			CALCULATE(
-			    SUM(gold_fact_driver_results[Season_Points]), 
-			    KEEPFILTERS(gold_fact_driver_results[meeting_key] = UltimoMeetingID),
-			    ALL(gold_dim_race) -- O el nombre que tenga tu tabla de circuitos/carreras
-			)
-			```
-		lineageTag: 89ddd7ab-566b-4f38-a95e-4df2345a4c60
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
 	measure 'Driver Rank Standings' = ```
 			
 			VAR UltimoMeeting = MAX(gold_fact_driver_results[meeting_key])
@@ -31,6 +15,47 @@ table gold_fact_driver_results
 		lineageTag: d32c689b-5a38-4861-b639-9d0f25fc0006
 
 		changedProperty = Name
+
+	measure Equipo_Actual_Logo = ```
+			
+			VAR FechaCorte = MAX('gold_ui_play_timeline'[Date])
+			VAR AnioActual = SELECTEDVALUE('gold_dim_race'[Year]) // Captura el año del visual o filtro
+			
+			// 1. Buscamos el último meeting del piloto PERO solo del año actual
+			VAR UltimoMeetingDelPiloto = 
+			    CALCULATE(
+			        MAX(gold_fact_driver_results[meeting_key]),
+			        'gold_dim_race'[Date] <= FechaCorte,
+			        'gold_dim_race'[Year] = AnioActual, 
+			        REMOVEFILTERS('gold_dim_race'[Date]) // Quitamos solo el filtro de fecha específica
+			    )
+			
+			// 2. Recuperamos el ID del equipo en ese momento y año
+			VAR TeamID_EnEseMomento = 
+			    CALCULATE(
+			        MAX(gold_fact_driver_results[Team ID]),
+			        gold_fact_driver_results[meeting_key] = UltimoMeetingDelPiloto,
+			        'gold_dim_race'[Year] = AnioActual,
+			        REMOVEFILTERS('gold_dim_race'[Date])
+			    )
+			
+			// 3. Devolvemos el logo (Solo si hay un meeting encontrado)
+			RETURN
+			    IF(
+			        ISBLANK(UltimoMeetingDelPiloto),
+			        BLANK(),
+			        CALCULATE(
+			            MAX(gold_dim_team[Team Logo]),
+			            gold_dim_team[Team ID] = TeamID_EnEseMomento
+			        )
+			    )
+			```
+		lineageTag: 5533cc63-4c13-4198-824f-6a3f154c240e
+		dataCategory: ImageUrl
+
+		changedProperty = Name
+
+		changedProperty = DataCategory
 
 	column Year
 		dataType: int64
@@ -49,21 +74,6 @@ table gold_fact_driver_results
 		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = User
-
-	column 'Driver ID'
-		dataType: string
-		isHidden
-		sourceProviderType: varchar(8000)
-		lineageTag: 09380af9-00eb-4c34-9ecf-164954c269d7
-		sourceLineageTag: Driver_ID
-		summarizeBy: none
-		sourceColumn: Driver_ID
-
-		changedProperty = Name
-
-		changedProperty = IsHidden
-
-		annotation SummarizationSetBy = Automatic
 
 	column 'Team ID'
 		dataType: string
@@ -97,7 +107,6 @@ table gold_fact_driver_results
 
 	column Season_Points
 		dataType: double
-		isHidden
 		sourceProviderType: real
 		lineageTag: 9c2ee9d8-e8fc-492f-8ac0-82cd12efa908
 		sourceLineageTag: Season_Points
@@ -146,6 +155,7 @@ table gold_fact_driver_results
 
 	column driver_number
 		dataType: int64
+		isHidden
 		formatString: 0
 		sourceProviderType: int
 		lineageTag: 158a1ffd-f875-4ede-bbb6-e7d5890df9e3
@@ -154,6 +164,24 @@ table gold_fact_driver_results
 		sourceColumn: driver_number
 
 		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Driver_Key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 32088232-935b-4b2f-b193-d4acbccf3fdd
+		sourceLineageTag: Driver_Key
+		summarizeBy: none
+		sourceColumn: Driver_Key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = User
 

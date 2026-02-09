@@ -124,23 +124,23 @@ print("✅ Todo listo. Dimensiones generadas usando columnas: gp_name, circuit, 
 
 # CELL ********************
 
-# --- CELL: FACT DRIVER (MÉTODO DELTA ROBUSTO - CORREGIDO) ---
+# --- CELL: FACT DRIVER (FIX FINAL - INDENTATION FIXED) ---
 from pyspark.sql.window import Window
 from pyspark.sql.functions import col, lag, concat, lit, max as _max, when
 
-print("🏗️ Generando Facts usando Deltas (Limpiando duplicados primero)...")
+print("🏗️ Generando Facts corrigiendo el salto de equipo (Bearman)...")
 
-# 1. CARGA Y LIMPIEZA PREVIA
+# 1. CARGA Y LIMPIEZA
 df_standings_raw = spark.table("silver_drivers_standings")
 
-# Nos quedamos con el MÁXIMO de puntos por meeting para eliminar duplicados
+# Limpiamos duplicados por meeting
 df_standings_clean = df_standings_raw \
     .groupBy("driver_number", "year", "meeting_key") \
     .agg(_max("points").alias("points"), _max("position").alias("position")) \
     .select("driver_number", "year", "meeting_key", "points", "position")
 
-df_drivers = spark.table("silver_drivers")
 df_circuits = spark.table("silver_circuits")
+df_drivers = spark.table("silver_drivers") 
 
 # 2. JOINS
 df_joined = df_standings_clean.alias("f") \
@@ -148,24 +148,25 @@ df_joined = df_standings_clean.alias("f") \
     .join(df_drivers.alias("d"), 
           (col("f.driver_number") == col("d.driver_number")) & 
           (col("f.year") == col("d.year")), 
-          how="left")
+          "left")
 
-# 3. CÁLCULO DELTA (LAG)
-w_diff = Window.partitionBy("f.driver_number", "f.year").orderBy("c.date_start")
+# 3. CÁLCULO DELTA (FIX 🛠️)
+# Agrupamos por NOMBRE COMPLETO para conectar Ferrari con Haas
+w_diff = Window.partitionBy("d.full_name", "f.year").orderBy("c.date_start")
 
 df_fact_driver = df_joined \
     .withColumn("prev_points", lag("f.points", 1, 0.0).over(w_diff)) \
     .withColumn("Race_Points", (col("f.points") - col("prev_points")).cast("float")) \
-    .withColumn("Driver_ID", concat(col("f.driver_number"), lit("-"), col("f.year"))) \
+    .withColumn("Driver_Key", (col("f.year") * 10000 + col("f.driver_number")).cast("long")) \
     .withColumn("Team_ID", concat(col("d.team_name"), lit("-"), col("f.year"))) \
     .select(
-        col("Driver_ID"),
+        col("Driver_Key"),
         col("Team_ID"),
         col("c.meeting_key"),
         col("f.year").alias("Year"),
-        col("f.driver_number"), # <--- ¡AQUÍ ESTÁ LA SOLUCIÓN! (Añadido de nuevo)
+        col("f.driver_number"),
         
-        # Corrección para evitar negativos
+        # Evitar negativos
         when(col("Race_Points") < 0, 0).otherwise(col("Race_Points")).alias("Race_Points"),
         
         col("f.points").alias("Season_Points"),
@@ -175,10 +176,7 @@ df_fact_driver = df_joined \
 # Guardar
 df_fact_driver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_fact_driver_results")
 
-print("✅ Fact Drivers arreglada. Columna driver_number añadida.")
-
-# Ahora este filtro SÍ funcionará porque la columna existe
-display(df_fact_driver.filter(col("driver_number") == 1).orderBy("meeting_key"))
+print("✅ Fact Table arreglada sin errores de indentación.")
 
 # METADATA ********************
 
@@ -261,6 +259,106 @@ df_timeline.write.mode("overwrite").option("overwriteSchema", "true").saveAsTabl
 
 print("✅ Tabla 'gold_ui_play_timeline' actualizada con meeting_key.")
 display(df_timeline)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# --- CELL: FIX DRIVER GROUPING (Solución para Matriz) ---
+from pyspark.sql.functions import col, trim
+
+print("🏗️ Añadiendo columna de agrupación a 'gold_dim_driver'...")
+
+# 1. Leemos la tabla original
+df_driver = spark.table("gold_dim_driver")
+
+# 2. Creamos la columna nueva (Copia exacta del nombre para agrupar)
+# Usamos trim() por seguridad para quitar espacios invisibles
+df_driver = df_driver.withColumn("Driver_Grouping_Name", trim(col("Driver")))
+
+# 3. Guardamos (Sobrescribiendo la tabla Gold)
+df_driver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_dim_driver")
+
+print("✅ Tabla 'gold_dim_driver' actualizada.")
+print("   - Ahora tienes 'Driver_Grouping_Name' disponible.")
+print("   - Ve a Power BI y dale a 'Actualizar' (Refresh).")
+display(df_driver)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# --- CELL: GOLD DIM DRIVER (FIX FINAL - ÚLTIMO RANKING) ---
+from pyspark.sql.window import Window
+from pyspark.sql.functions import col, row_number
+
+print("🏗️ Generando Dim Driver con el RANKING FINAL (Última carrera)...")
+
+# 1. Preparar datos: Unimos Standings con Drivers para tener Nombres y Fechas (meeting_key)
+df_drivers = spark.table("silver_drivers")
+df_standings = spark.table("silver_drivers_standings")
+
+# Hacemos join para tener (Nombre, Año, Meeting_Key, Posición)
+df_joined = df_drivers.alias("d") \
+    .join(df_standings.alias("s"), 
+          (col("d.driver_number") == col("s.driver_number")) & 
+          (col("d.year") == col("s.year")), 
+          "inner") \
+    .select(
+        col("d.full_name"),
+        col("d.year"),
+        col("s.meeting_key"),
+        col("s.position").cast("int").alias("rank_in_race")
+    )
+
+# 2. ⭐️ LA LÓGICA CLAVE: Buscar el ranking de la ÚLTIMA carrera ⭐️
+#    Para cada Persona (Nombre) y Año, ordenamos por carrera (meeting_key) DESCENDENTE.
+#    El primero que salga (rn=1) es su estado final de temporada.
+w_last_status = Window.partitionBy("full_name", "year").orderBy(col("meeting_key").desc())
+
+df_final_ranks = df_joined \
+    .withColumn("rn", row_number().over(w_last_status)) \
+    .filter("rn == 1") \
+    .select(
+        col("full_name"), 
+        col("year"), 
+        col("rank_in_race").alias("Final_Season_Rank") # Este será el 18 para Bearman
+    )
+
+# 3. Pegar este ranking "Correcto" a la tabla final de Drivers
+df_final = spark.table("silver_drivers").alias("d") \
+    .join(df_final_ranks.alias("r"), 
+          (col("d.full_name") == col("r.full_name")) & 
+          (col("d.year") == col("r.year")), 
+          "left") \
+    .withColumn("Driver_Key", (col("d.year") * 10000 + col("d.driver_number")).cast("long")) \
+    .select(
+        "Driver_Key",
+        col("d.driver_number").alias("Number"),
+        col("d.year").alias("Year"),
+        col("d.full_name").alias("Driver"),
+        col("d.headshot_url").alias("Driver_Photo"),
+        col("d.country_code").alias("Driver_Country"),
+        col("r.Final_Season_Rank").alias("Season_Rank_Sort") # <--- AHORA SÍ: El rank final real
+    ) \
+    .dropDuplicates(["Driver_Key"])
+
+# 4. Guardar
+df_final.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_dim_driver")
+
+print("✅ Dimensión corregida.")
+print("   - Oliver Bearman ahora tendrá Season_Rank_Sort = 18 en ambas filas.")
+display(df_final.filter("Number = 38 OR Number = 50"))
 
 # METADATA ********************
 
