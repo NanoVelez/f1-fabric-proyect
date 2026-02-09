@@ -78,6 +78,7 @@ table gold_fact_driver_results
 
 	column Season_Points
 		dataType: double
+		formatString: " 0.######"
 		sourceProviderType: real
 		lineageTag: 9c2ee9d8-e8fc-492f-8ac0-82cd12efa908
 		sourceLineageTag: Season_Points
@@ -88,9 +89,11 @@ table gold_fact_driver_results
 
 		changedProperty = IsHidden
 
+		changedProperty = FormatString
+
 		annotation SummarizationSetBy = User
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"isCustom":true}
 
 	column World_Position
 		dataType: int64

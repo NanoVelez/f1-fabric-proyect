@@ -12,11 +12,14 @@ table gold_fact_team_results
 			        gold_dim_race[Date] <= Fecha_Corte
 			    )
 			```
+		formatString: " 0.######"
 		lineageTag: e0b18264-39cd-4788-a789-4612b374b430
 
 		changedProperty = Name
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
 
 	measure Team_Ranks = ```
 			
