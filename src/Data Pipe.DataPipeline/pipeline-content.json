@@ -1,0 +1,139 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": true,
+          "items": {
+            "value": "@pipeline().parameters.YearsToProcess",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "4b8e401c-8871-986a-4855-c8569aa4ab80",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "YEAR": {
+                    "value": "@item()",
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Bronze",
+              "dependsOn": []
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "3cc5420a-278e-b4a6-42b6-760e4d07bca3",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "YEAR_PARAM": {
+                    "value": "@item()",
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Silver",
+              "dependsOn": [
+                {
+                  "activity": "Bronze",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "name": "Loop",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "3b4b1eea-db44-b73d-4fbd-c1d9f8bb5bee",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Gold",
+        "dependsOn": [
+          {
+            "activity": "Loop",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "PBISemanticModelRefresh",
+        "typeProperties": {
+          "method": "post",
+          "groupId": "399cf811-13f0-4d3d-80bb-5f12b960d7a3",
+          "datasetId": "9d368b1c-2a48-4d32-9481-f16748fa2d37",
+          "commitMode": "Transactional",
+          "waitOnCompletion": true,
+          "operationType": "SemanticModelRefresh"
+        },
+        "externalReferences": {
+          "connection": "63e7f930-84cf-404c-91c9-3016fd1a0a20"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Model F1 Refresh",
+        "dependsOn": [
+          {
+            "activity": "Gold",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "YearsToProcess": {
+        "type": "array",
+        "defaultValue": [
+          2022,
+          2023,
+          2024
+        ]
+      }
+    },
+    "variables": {
+      "YearsToProcess": {
+        "type": "Array"
+      }
+    }
+  }
+}

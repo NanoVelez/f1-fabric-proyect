@@ -26,7 +26,8 @@ table gold_fact_team_results
 			VAR UltimaFechaConDatos = 
 			    CALCULATE(
 			        MAX(gold_dim_race[Date]),
-			        NOT(ISBLANK(gold_fact_team_results[Race_Key]))
+			        REMOVEFILTERS(gold_dim_race),
+			        NOT(ISBLANK(gold_fact_team_results[World_Position]))
 			    )
 			
 			VAR FechaCorte = 
@@ -36,11 +37,19 @@ table gold_fact_team_results
 			        UltimaFechaConDatos
 			    )
 			
+			VAR FechaRealDelEvento = 
+			    CALCULATE(
+			        MAX(gold_dim_race[Date]),
+			        REMOVEFILTERS(gold_dim_race),
+			        gold_dim_race[Date] <= FechaCorte,
+			        NOT(ISBLANK(gold_fact_team_results[World_Position]))
+			    )
+			
 			VAR UltimoMeetingValido = 
 			    CALCULATE(
 			        MAX(gold_fact_team_results[Race_Key]),
 			        REMOVEFILTERS(gold_dim_race),
-			        gold_dim_race[Date] <= FechaCorte
+			        gold_dim_race[Date] = FechaRealDelEvento 
 			    )
 			
 			RETURN

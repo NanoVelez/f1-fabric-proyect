@@ -47,8 +47,6 @@ print("Gold Environment Ready: Analytical libraries loaded.")
 # CELL ********************
 
 # --- CELL 1: GOLD DIM DRIVER ---
-
-# Config
 TABLE_NAME = "gold_dim_driver"
 
 print(f"Building {TABLE_NAME}...")
@@ -56,10 +54,22 @@ print(f"Building {TABLE_NAME}...")
 # 1. Sources
 df_drivers = spark.table("silver_drivers")
 df_standings = spark.table("silver_drivers_standings")
+df_circuits = spark.table("silver_circuits") 
 
-# 2. Join to get Driver + Results
+# 2. Preparation
+df_standings_with_date = df_standings.alias("s") \
+    .join(df_circuits.alias("c"), col("s.meeting_key") == col("c.meeting_key"), "inner") \
+    .select(
+        col("s.driver_number"),
+        col("s.year"),
+        col("s.meeting_key"),
+        col("s.position"),
+        col("c.date_start") 
+    )
+
+# 3. Join to get Driver + Results + Date
 df_joined = df_drivers.alias("d") \
-    .join(df_standings.alias("s"), 
+    .join(df_standings_with_date.alias("s"), 
           (col("d.driver_number") == col("s.driver_number")) & 
           (col("d.year") == col("s.year")), 
           "inner") \
@@ -67,11 +77,12 @@ df_joined = df_drivers.alias("d") \
         col("d.full_name"),
         col("d.year"),
         col("s.meeting_key"),
+        col("s.date_start"),
         col("s.position").cast("int").alias("rank_in_race")
     )
 
-# 3. KEY LOGIC
-w_last_status = Window.partitionBy("full_name", "year").orderBy(col("meeting_key").desc())
+# 4. KEY LOGIC
+w_last_status = Window.partitionBy("full_name", "year").orderBy(col("date_start").desc())
 
 df_final_ranks = df_joined \
     .withColumn("rn", row_number().over(w_last_status)) \
@@ -82,7 +93,7 @@ df_final_ranks = df_joined \
         col("rank_in_race").alias("Final_Season_Rank") 
     )
 
-# 4. Final Assembly
+# 5. Final Assembly
 df_final = spark.table("silver_drivers").alias("d") \
     .join(df_final_ranks.alias("r"), 
           (col("d.full_name") == col("r.full_name")) & 
@@ -100,10 +111,10 @@ df_final = spark.table("silver_drivers").alias("d") \
     ) \
     .dropDuplicates(["Driver_Key"])
 
-# 5. Write
+# 6. Write
 df_final.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .saveAsTable(TABLE_NAME)
 
 print(f"{TABLE_NAME} CREATED.")
@@ -152,7 +163,7 @@ df_gold_team = df_teams_silver.alias("t") \
 # 4. Write
 df_gold_team.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .saveAsTable(TABLE_NAME)
 
 print(f"{TABLE_NAME} CREATED.")
@@ -200,7 +211,7 @@ df_gold_race = df_calculated \
 # 4. Write
 df_gold_race.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .saveAsTable(TABLE_NAME)
 
 print(f"{TABLE_NAME} CREATED.")
@@ -260,7 +271,7 @@ df_fact_driver = df_joined \
 # 5. Write
 df_fact_driver.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .saveAsTable(TABLE_NAME)
 
 print(f"{TABLE_NAME} CREATED.")
@@ -314,7 +325,7 @@ df_fact_team = df_joined_t \
 # 5. Write
 df_fact_team.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .saveAsTable(TABLE_NAME)
 
 print(f"{TABLE_NAME} CREATED.")
@@ -350,7 +361,7 @@ df_timeline = df_source \
 # 3. Write
 df_timeline.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .saveAsTable(TABLE_NAME)
 
 print(f"{TABLE_NAME} CREATED.")

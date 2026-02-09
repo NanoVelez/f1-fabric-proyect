@@ -20,6 +20,17 @@
 # META   }
 # META }
 
+# PARAMETERS CELL ********************
+
+YEAR = "2023"
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
 # CELL ********************
 
 import requests
@@ -28,8 +39,11 @@ from notebookutils import mssparkutils
 import time
 
 # --- CONFIGURATION ---
+
+# 0. Spark Configuration
+spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+
 BASE_URL = "https://api.openf1.org/v1"
-YEAR = "2023"
 PATH_BRONZE = f"Files/bronze/{YEAR}"
 
 # --- 1. CLEANUP ---

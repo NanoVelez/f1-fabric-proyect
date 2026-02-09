@@ -4,12 +4,19 @@ table gold_fact_driver_results
 
 	measure Driver_Ranks = ```
 			
-			VAR UltimoMeeting = MAX(gold_fact_driver_results[Race_Key])
+			VAR UltimaFechaVisible = MAX(gold_dim_race[Date])
+			
+			VAR UltimoMeeting = 
+			    CALCULATE(
+			        MAX(gold_fact_driver_results[Race_Key]),
+			        gold_dim_race[Date] = UltimaFechaVisible
+			    )
+			
 			RETURN 
-			CALCULATE(
-			    MAX(gold_fact_driver_results[World_Position]),
-			    gold_fact_driver_results[Race_Key] = UltimoMeeting
-			)
+			    CALCULATE(
+			        MAX(gold_fact_driver_results[World_Position]),
+			        gold_fact_driver_results[Race_Key] = UltimoMeeting
+			    )
 			```
 		formatString: 0
 		lineageTag: d32c689b-5a38-4861-b639-9d0f25fc0006

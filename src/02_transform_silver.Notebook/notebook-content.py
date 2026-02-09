@@ -20,6 +20,17 @@
 # META   }
 # META }
 
+# PARAMETERS CELL ********************
+
+YEAR_PARAM = "2023"
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
 # CELL ********************
 
 # --- CELL 0: GLOBAL SETUP & IMPORTS ---
@@ -29,6 +40,9 @@ from pyspark.sql.functions import (
     current_timestamp, max as _max
 )
 from pyspark.sql.window import Window 
+
+# 0. Spark Configuration
+spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 PATH_BRONZE = "Files/bronze/"
 PATH_SILVER = "Files/silver/" 
@@ -78,7 +92,7 @@ print(f"Saving Delta table: {TABLE_NAME}...")
 
 df_silver.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .format("delta") \
     .partitionBy("year") \
     .saveAsTable(TABLE_NAME)
@@ -120,7 +134,7 @@ df_silver = spark.read \
 # 2. WRITE
 df_silver.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .format("delta") \
     .partitionBy("year") \
     .saveAsTable(TABLE_NAME)
@@ -171,7 +185,7 @@ print(f"Saving Delta table: {TABLE_NAME}...")
 df_circuits_silver.orderBy("date_start") \
     .write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .format("delta") \
     .saveAsTable(TABLE_NAME)
 
@@ -220,7 +234,7 @@ df_drivers_silver = spark.read \
 # 2. WRITE
 df_drivers_silver.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .format("delta") \
     .partitionBy("year") \
     .saveAsTable(TABLE_NAME)
@@ -268,7 +282,7 @@ df_teams_silver = df_teams_unique.withColumn(
 # 3. WRITE
 df_teams_silver.write \
     .mode("overwrite") \
-    .option("overwriteSchema", "true") \
+    .option("mergeSchema", "true") \
     .format("delta") \
     .partitionBy("year") \
     .saveAsTable(TABLE_NAME)
