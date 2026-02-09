@@ -86,12 +86,15 @@ table gold_dim_driver
 
 	column Year
 		dataType: int64
+		isHidden
 		formatString: 0
 		sourceProviderType: int
 		lineageTag: 8303c59c-bbd1-4d7a-b0d9-14ba6291bd9e
 		sourceLineageTag: Year
 		summarizeBy: none
 		sourceColumn: Year
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

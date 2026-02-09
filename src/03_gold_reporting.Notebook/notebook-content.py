@@ -124,31 +124,37 @@ print("✅ Todo listo. Dimensiones generadas usando columnas: gp_name, circuit, 
 
 # CELL ********************
 
-# --- CELL: FACT DRIVER (USANDO RANKING OFICIAL DE LA API) ---
+# --- CELL: FACT DRIVER (MÉTODO DELTA ROBUSTO - CORREGIDO) ---
 from pyspark.sql.window import Window
-from pyspark.sql.functions import col, lag, concat, lit
+from pyspark.sql.functions import col, lag, concat, lit, max as _max, when
 
-print("🏗️ Generando Facts usando 'position' oficial de la API...")
+print("🏗️ Generando Facts usando Deltas (Limpiando duplicados primero)...")
 
-# 1. Tablas
-df_d_standings = spark.table("silver_drivers_standings") # Aquí está la columna 'position' oficial
+# 1. CARGA Y LIMPIEZA PREVIA
+df_standings_raw = spark.table("silver_drivers_standings")
+
+# Nos quedamos con el MÁXIMO de puntos por meeting para eliminar duplicados
+df_standings_clean = df_standings_raw \
+    .groupBy("driver_number", "year", "meeting_key") \
+    .agg(_max("points").alias("points"), _max("position").alias("position")) \
+    .select("driver_number", "year", "meeting_key", "points", "position")
+
 df_drivers = spark.table("silver_drivers")
 df_circuits = spark.table("silver_circuits")
 
-# 2. Joins
-df_joined = df_d_standings.alias("f") \
+# 2. JOINS
+df_joined = df_standings_clean.alias("f") \
     .join(df_circuits.alias("c"), col("f.meeting_key") == col("c.meeting_key")) \
     .join(df_drivers.alias("d"), 
           (col("f.driver_number") == col("d.driver_number")) & 
           (col("f.year") == col("d.year")), 
           how="left")
 
-# 3. Ventana SOLO para calcular los puntos de la carrera (Race_Points)
-#    (Esto sí lo necesitamos porque la API suele dar el acumulado)
+# 3. CÁLCULO DELTA (LAG)
 w_diff = Window.partitionBy("f.driver_number", "f.year").orderBy("c.date_start")
 
 df_fact_driver = df_joined \
-    .withColumn("prev_points", lag("f.points", 1, 0).over(w_diff)) \
+    .withColumn("prev_points", lag("f.points", 1, 0.0).over(w_diff)) \
     .withColumn("Race_Points", (col("f.points") - col("prev_points")).cast("float")) \
     .withColumn("Driver_ID", concat(col("f.driver_number"), lit("-"), col("f.year"))) \
     .withColumn("Team_ID", concat(col("d.team_name"), lit("-"), col("f.year"))) \
@@ -157,16 +163,22 @@ df_fact_driver = df_joined \
         col("Team_ID"),
         col("c.meeting_key"),
         col("f.year").alias("Year"),
+        col("f.driver_number"), # <--- ¡AQUÍ ESTÁ LA SOLUCIÓN! (Añadido de nuevo)
         
-        # --- LOS DATOS CLAVE ---
-        col("Race_Points"),                          # Puntos ganados hoy (calculado)
-        col("f.points").alias("Season_Points"),      # Puntos acumulados (directo de la API)
-        col("f.position").alias("World_Position")    # <--- ¡DIRECTO DE LA API! (Ya tiene el desempate oficial)
+        # Corrección para evitar negativos
+        when(col("Race_Points") < 0, 0).otherwise(col("Race_Points")).alias("Race_Points"),
+        
+        col("f.points").alias("Season_Points"),
+        col("f.position").alias("World_Position")
     )
 
+# Guardar
 df_fact_driver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_fact_driver_results")
 
-print("✅ Fact Drivers actualizada. Usando Ranking Oficial de la FIA.")
+print("✅ Fact Drivers arreglada. Columna driver_number añadida.")
+
+# Ahora este filtro SÍ funcionará porque la columna existe
+display(df_fact_driver.filter(col("driver_number") == 1).orderBy("meeting_key"))
 
 # METADATA ********************
 
@@ -224,17 +236,31 @@ print("✅ Fact Teams actualizada. Ranking de Constructores listo.")
 
 # CELL ********************
 
-# --- DEBUGGING: ¿QUÉ ESTÁ SUMANDO MAX? ---
+# --- CELL: GOLD UI TIMELINE (CON MEETING KEY PARA RELACIÓN LIMPIA) ---
 from pyspark.sql.functions import col
 
-print("🔍 Inspeccionando China (Meeting 1209) y Miami (Meeting 1210) para Max...")
+print("🏗️ Generando Tabla Auxiliar UI con MEETING KEY...")
 
-spark.table("gold_fact_driver_results") \
-    .filter(col("Driver_ID") == 1) \
-    .filter(col("year") == 2024) \
-    .filter(col("meeting_key").isin(1209, 1210)) \
-    .select("meeting_key", "session_type", "position", "points") \
-    .show()
+# 1. Leemos silver_circuits (o gold_dim_race / gold_fact_driver_results)
+# Lo ideal es leer de la misma fuente que usaste para gold_dim_race para asegurar consistencia
+df_source = spark.table("silver_circuits") 
+
+# 2. Seleccionamos Fecha, GP y la LLAVE
+df_timeline = df_source \
+    .select(
+        col("date_start").alias("Date"), 
+        col("gp_name"),
+        col("meeting_key").cast("int").alias("meeting_key"), # <--- ¡LA LLAVE MAESTRA!
+        col("year").cast("int").alias("Year") # Opcional, pero útil para validar visualmente
+    ) \
+    .distinct() \
+    .orderBy("Date")
+
+# 3. Guardamos
+df_timeline.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("gold_ui_play_timeline")
+
+print("✅ Tabla 'gold_ui_play_timeline' actualizada con meeting_key.")
+display(df_timeline)
 
 # METADATA ********************
 

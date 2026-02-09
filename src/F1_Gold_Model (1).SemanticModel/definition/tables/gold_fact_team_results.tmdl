@@ -2,33 +2,66 @@ table gold_fact_team_results
 	lineageTag: 2bf5b417-fe98-4904-807d-8771244f6d17
 	sourceLineageTag: [dbo].[gold_fact_team_results]
 
-	measure 'Team Points Standings' = ```
+	measure Puntos_Ranking_Animado = ```
 			
-			VAR UltimoMeetingID = MAX(gold_fact_team_results[meeting_key])
-			RETURN 
-			CALCULATE(
-			    SUM(gold_fact_team_results[Season_Points]), 
-			    KEEPFILTERS(gold_fact_team_results[meeting_key] = UltimoMeetingID),
-			    ALL(gold_dim_race) -- O el nombre que tenga tu tabla de circuitos/carreras
-			)
+			VAR Fecha_Corte = MAX('gold_ui_play_timeline'[Date]) // La fecha del Play Axis
+			
+			RETURN
+			    CALCULATE(
+			        // 1. Buscamos el valor acumulado máximo
+			        MAX(gold_fact_team_results[Season_Points]), 
+			        
+			        // 2. FILTRO MÁGICO: Obligamos a Power BI a mirar solo el pasado
+			        // "Filtra la tabla de hechos para que solo entren carreras anteriores al corte"
+			        gold_dim_race[Date] <= Fecha_Corte
+			    )
 			```
-		lineageTag: d1060563-b929-499b-a091-6e90b9e2261a
+		lineageTag: e0b18264-39cd-4788-a789-4612b374b430
 
 		changedProperty = Name
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	measure 'Team Rank Standings' = ```
+	measure Ranking_Oficial_Final = ```
 			
-			VAR UltimoMeeting = MAX(gold_fact_team_results[meeting_key])
-			RETURN 
-			CALCULATE(
-			    MAX(gold_fact_team_results[World_Position]),
-			    gold_fact_team_results[meeting_key] = UltimoMeeting
-			)
+			// 1. CAPTURAR LA FECHA DEL PLAY AXIS
+			VAR FechaPlay = MAX('gold_ui_play_timeline'[Date])
+			VAR HayJuego = ISFILTERED('gold_ui_play_timeline')
+			
+			// 2. BUSCAR LA ÚLTIMA FECHA REAL CON DATOS (El Freno de Mano) 🛑
+			VAR UltimaFechaConDatos = 
+			    CALCULATE(
+			        MAX(gold_dim_race[Date]),
+			        // Solo miramos fechas donde realmente hubo carreras con resultados
+			        NOT(ISBLANK(gold_fact_team_results[meeting_key]))
+			    )
+			
+			// 3. DECIDIR LA FECHA DE CORTE (Clamping)
+			// Si el Play Axis se va al futuro, nos quedamos en la última carrera real.
+			VAR FechaCorte = 
+			    IF(
+			        HayJuego, 
+			        MIN(FechaPlay, UltimaFechaConDatos), 
+			        UltimaFechaConDatos
+			    )
+			
+			// 4. LÓGICA DE RECUPERACIÓN (Sin Coalesce)
+			VAR UltimoMeetingValido = 
+			    CALCULATE(
+			        MAX(gold_fact_team_results[meeting_key]),
+			        REMOVEFILTERS(gold_dim_race),
+			        gold_dim_race[Date] <= FechaCorte
+			    )
+			
+			RETURN
+			    // 5. DEVUELVE LA POSICIÓN LIMPIA
+			    CALCULATE(
+			        MAX(gold_fact_team_results[World_Position]),
+			        gold_fact_team_results[meeting_key] = UltimoMeetingValido
+			    )
 			```
 		formatString: 0
-		lineageTag: 8083985e-cc8b-4d18-bed8-16a785295ab0
+		lineageTag: 51edf90a-3a56-49d3-8283-cb5977a22cdf
 
 		changedProperty = Name
 

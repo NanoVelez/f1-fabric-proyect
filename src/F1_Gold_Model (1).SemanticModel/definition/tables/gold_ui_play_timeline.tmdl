@@ -1,0 +1,109 @@
+table gold_ui_play_timeline
+	lineageTag: b63b7dea-9874-45e3-87e7-c4a306a56d96
+	sourceLineageTag: [dbo].[gold_ui_play_timeline]
+
+	measure Puntos_Animados = ```
+			
+			// 1. EL FIX: Usamos REMOVEFILTERS (o ALL) en la tabla de carreras.
+			// Esto le dice a Power BI: "Al calcular la fecha de corte, ignora que estoy 
+			// dibujando el punto de Bahrain/Australia/etc. Dame la fecha real del Play Axis".
+			VAR Fecha_Corte = CALCULATE(
+			    MAX('gold_ui_play_timeline'[Date]),
+			    REMOVEFILTERS(gold_dim_race) 
+			)
+			
+			VAR Fecha_Actual = MAX('gold_dim_race'[Date]) 
+			
+			RETURN
+			    IF(
+			        // Si el Play Axis no se está usando, mostramos todo (seguro)
+			        NOT(ISFILTERED('gold_ui_play_timeline')),
+			        MAX(gold_fact_team_results[Season_Points]),
+			
+			        // Si hay Play Axis, aplicamos la lógica de tiempo
+			        IF(
+			            Fecha_Actual <= Fecha_Corte,
+			            MAX(gold_fact_team_results[Season_Points]),
+			            BLANK()
+			        )
+			    )
+			```
+		lineageTag: 92e15e54-4da8-4627-9aa6-0241f6d7c581
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Date
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		sourceProviderType: datetime2
+		lineageTag: a29df72c-3665-4100-8b4b-2cd47e2fd6ed
+		sourceLineageTag: Date
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = DataType
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	column gp_name
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 0a642338-35f0-4595-abfb-bd25f51b2517
+		sourceLineageTag: gp_name
+		summarizeBy: none
+		sourceColumn: gp_name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 4e0f2656-4051-4bbe-aaa8-fa580bf4461e
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column meeting_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 13465334-86ee-4808-8030-79c25a2f0f77
+		sourceLineageTag: meeting_key
+		summarizeBy: none
+		sourceColumn: meeting_key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition gold_ui_play_timeline = entity
+		mode: directLake
+		source
+			entityName: gold_ui_play_timeline
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

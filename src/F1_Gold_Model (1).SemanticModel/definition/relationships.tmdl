@@ -18,3 +18,7 @@ relationship 96e348ae-5c3d-6d0c-43d6-21bde1d21a5e
 	fromColumn: gold_fact_driver_results.'Team ID'
 	toColumn: gold_dim_team.'Team ID'
 
+relationship fd78d55c-8ee3-a241-001b-f91baf256148
+	fromColumn: gold_ui_play_timeline.meeting_key
+	toColumn: gold_dim_race.meeting_key
+

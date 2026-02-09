@@ -18,4 +18,5 @@ ref table gold_fact_team_results
 ref table gold_dim_driver
 ref table gold_dim_team
 ref table gold_dim_race
+ref table gold_ui_play_timeline
 

@@ -144,6 +144,19 @@ table gold_fact_driver_results
 
 		annotation SummarizationSetBy = User
 
+	column driver_number
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 158a1ffd-f875-4ede-bbb6-e7d5890df9e3
+		sourceLineageTag: driver_number
+		summarizeBy: none
+		sourceColumn: driver_number
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
 	partition gold_fact_driver_results = entity
 		mode: directLake
 		source
