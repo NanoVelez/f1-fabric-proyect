@@ -1,0 +1,24 @@
+relationship 2e4362aa-b46b-fbf7-c6f2-de8918241cd6
+	fromColumn: gold_fact_driver_results.Driver_Key
+	toColumn: gold_dim_driver.Driver_Key
+
+relationship a1414b99-5fe9-1bbd-17ba-09b70b4fab95
+	fromColumn: gold_fact_driver_results.Race_Key
+	toColumn: gold_dim_race.Race_Key
+
+relationship 7008f0e7-c7d7-d0f9-0bd2-5fe86c8498d0
+	fromColumn: gold_fact_team_results.Race_Key
+	toColumn: gold_dim_race.Race_Key
+
+relationship 76520d05-4ca2-c74e-2758-9b9574b2ae45
+	fromColumn: gold_ui_play_timeline.Race_Key
+	toColumn: gold_dim_race.Race_Key
+
+relationship e3887ba4-09f2-6bdf-1d1d-5d5031c1f030
+	fromColumn: gold_fact_driver_results.Team_Key
+	toColumn: gold_dim_team.Team_Key
+
+relationship 06967fb9-81ea-80e9-41c5-eb02bf0c741f
+	fromColumn: gold_fact_team_results.Team_Key
+	toColumn: gold_dim_team.Team_Key
+

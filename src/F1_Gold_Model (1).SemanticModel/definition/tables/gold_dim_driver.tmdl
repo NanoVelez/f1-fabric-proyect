@@ -1,0 +1,110 @@
+table gold_dim_driver
+	lineageTag: c816bd49-2ea1-473c-bf94-9bfcce1f433d
+	sourceLineageTag: [dbo].[gold_dim_driver]
+
+	column Driver
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 33926ee6-ae5c-4744-b741-596ed6878a3b
+		sourceLineageTag: Driver
+		summarizeBy: none
+		sourceColumn: Driver
+		sortByColumn: Season_Rank_Sort
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Driver_Photo
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: eb4f49a1-0c4e-45a5-9eae-0db510eb2255
+		sourceLineageTag: Driver_Photo
+		dataCategory: ImageUrl
+		summarizeBy: none
+		sourceColumn: Driver_Photo
+
+		changedProperty = DataCategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column Driver_Country
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 2736f216-caa3-45cd-b848-262377f36ac4
+		sourceLineageTag: Driver_Country
+		summarizeBy: none
+		sourceColumn: Driver_Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column Number
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: bda187ef-a311-47d8-8f3e-bdc4903337f4
+		sourceLineageTag: Number
+		summarizeBy: none
+		sourceColumn: Number
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
+	column Season_Rank_Sort
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 6f932be7-afb7-4054-8f3e-6313fe9894c9
+		sourceLineageTag: Season_Rank_Sort
+		summarizeBy: none
+		sourceColumn: Season_Rank_Sort
+
+		changedProperty = IsHidden
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 8303c59c-bbd1-4d7a-b0d9-14ba6291bd9e
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = IsHidden
+
+		changedProperty = SummarizeBy
+
+		annotation SummarizationSetBy = User
+
+	column Driver_Key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 280c9af3-f116-4167-8197-dc6191da594b
+		sourceLineageTag: Driver_Key
+		summarizeBy: none
+		sourceColumn: Driver_Key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition gold_dim_driver = entity
+		mode: directLake
+		source
+			entityName: gold_dim_driver
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

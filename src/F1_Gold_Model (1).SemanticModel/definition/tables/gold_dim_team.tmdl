@@ -1,0 +1,83 @@
+table gold_dim_team
+	lineageTag: 521775d5-88d9-4d42-8017-01d21a6f518b
+	sourceLineageTag: [dbo].[gold_dim_team]
+
+	measure Team_Color_Hex = MAX('gold_dim_team'[Hex_Color])
+		lineageTag: f503e8a1-f6f8-44cb-b2be-a93a4ef5217b
+
+		changedProperty = Name
+
+	column Team
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 76aa4dd1-4272-4e5f-b278-4f0cc3d4f8d9
+		sourceLineageTag: Team
+		summarizeBy: none
+		sourceColumn: Team
+
+		annotation SummarizationSetBy = Automatic
+
+	column Team_Logo
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 0437da62-9336-4d91-9774-01a363193b76
+		sourceLineageTag: Team_Logo
+		dataCategory: ImageUrl
+		summarizeBy: none
+		sourceColumn: Team_Logo
+
+		changedProperty = DataCategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column Hex_Color
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 6e9a1a31-5d04-484c-8313-b8d9d4fdcf68
+		sourceLineageTag: Hex_Color
+		summarizeBy: none
+		sourceColumn: Hex_Color
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: aa4106a1-902e-40dd-93d6-df5dfc1fb083
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Team_Key
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 41e72dab-ddaa-40ec-8c37-d9a9bf2a387f
+		sourceLineageTag: Team_Key
+		summarizeBy: none
+		sourceColumn: Team_Key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_dim_team = entity
+		mode: directLake
+		source
+			entityName: gold_dim_team
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+
