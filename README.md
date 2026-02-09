@@ -53,10 +53,9 @@ The data flows from the API through a structured Lakehouse architecture:
     - [x] Constructors Data
     - [x] Circuits Data
 
-- [ ] **Phase 5: Final Dashboard in Power BI**
-    - [ ] Drivers Data
-    - [ ] Constructors Data
-    - [ ] Circuits Data
+- [x] **Phase 5: Final Dashboard in Power BI**
+    - [x] Driver Championship Data
+    - [x] Constructor Championship Data
 
 ## 💻 How to Run
 This project is designed to run inside a Microsoft Fabric Workspace.
