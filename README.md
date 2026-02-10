@@ -98,10 +98,20 @@ This is where the engineering value shines. F1 data is notoriously chaotic—dri
 * **The Problem:** A driver (e.g., Ricciardo/Lawson in 2023) can change teams mid-year. A simple JOIN on `Driver_Key` would duplicate records or lose historical context.
 * **The Solution:** I implemented a **Dynamic Normalization** logic. Results are bound to a unique combination of `Race_Key` + `Driver_Key` + `Team_Key`. This ensures a driver's history remains intact regardless of the colors they wore in a specific Grand Prix.
 
-####  Custom Data Enrichment:
+####  Custom Data Enrichment
 * **The Problem:** The OpenF1 API occasionally lacks standardized short codes for Grand Prix names, which are essential for clean visualizations and axis labels.
 * **The Solution:** I engineered a custom mapping logic to generate consistent **3-letter Alpha Codes** (e.g., `MON` for Monaco, `SPA` for Spain). 
 * **Impact:** This enrichment ensures that drivers charts remain visually consistent and readable, regardless of the raw naming conventions provided by the source API.
+
+#### UX/UI Data
+* **The Problem:** The source API occasionally returns `NULL` or broken URLs for driver headshots, particularly for rookies or mid-season substitutes (e.g., Bearman, Lawson).
+* **The Solution:** The script detects missing assets and automatically injects a hosted "Generic Silhouette" URL.
+* **Impact:** This ensures a polished user interface in Power BI, preventing "broken image" icons and maintaining visual consistency across all driver profiles.
+
+#### Data Availability & Scope
+* **The Constraint:** The **OpenF1 API** provides telemetry (gap analysis, sector times, positioning) primarily for recent seasons. Historical data prior to 2023 lacks the granularity required for the advanced visualizations in this report.
+* **The Strategy:** To ensure data consistency and dashboard reliability, I scoped the ingestion pipeline to the **2023-2025 era**.
+* **Scalability Note:** The architecture itself is **year-agnostic**. If the API expands its historical coverage in the future, the pipeline can ingest those seasons simply by updating the `Year` parameter, without code changes.
 
 ####  Data Cleansing & Deduplication
 * Leveraging **PySpark** `dropDuplicates()` functions based on sensor timestamps to ensure the Silver layer only stores a "Single Source of Truth," even if the source API sends redundant telemetry.
@@ -143,6 +153,11 @@ The report is designed for high-level competitive analysis, moving beyond simple
 
 #### Deneb & Vega-Lite:
 * Implementation of custom visuals to display time densities and dynamic rankings.
+
+#### Dynamic Data Styling
+* **The Limitation:** Native Power BI charts often assign random colors to categorical data, requiring manual maintenance every time a team rebrands or a new season starts.
+* **The Solution:** By using **Deneb (Vega-Lite)**, I bypassed the native color palette restrictions. I created a binding function that reads the specific **Hex Color Code** (ingested in the Silver layer) for each team and applies it directly to the visual marks.
+* **Impact:** "Ferrari Red" or "Aston Martin Green" is rendered dynamically based on the data context. This guarantees **Brand Consistency** across historical analysis.
 
 ####  Interactive Season Timeline
 * To provide a truly immersive experience, I implemented a **Dynamic Timeline** that allows you to "replay" the season.
