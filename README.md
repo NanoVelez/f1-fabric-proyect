@@ -1,4 +1,4 @@
-# Formula 1 End-to-End Data Pipeline
+# F1 Data Analytics Platform | Microsoft Fabric End-to-End
 
 <div align="center">
 
