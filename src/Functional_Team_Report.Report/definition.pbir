@@ -3,7 +3,7 @@
   "version": "4.0",
   "datasetReference": {
     "byPath": {
-      "path": "../F1_Gold_Model (1).SemanticModel"
+      "path": "../F1_Gold_Model.SemanticModel"
     }
   }
 }
