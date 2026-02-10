@@ -80,7 +80,6 @@ The data flows from the API through a structured Lakehouse architecture:
 The workflow begins with the total automation of the data lifecycle. This is not just a collection of scripts; it is a resilient process orchestrated natively within **Microsoft Fabric**.
 
 * **Data Factory Orchestration:** A master pipeline manages dependencies, ensuring the **Silver** process only triggers if **Bronze** succeeds, maintaining referential integrity from the start.
-* **Dynamic Parameterization (Variables):** To achieve full automation, I implemented **Pipeline Variables**. This allows the system to dynamically inject values such as `Season`, `Meeting_Key`, or `API_Endpoints` across different activities without manual intervention.
 * **API Limit Handling:** The ingestion layer is built to handle paginated requests and respect rate limits from the OpenF1 API, preventing data loss or connection blocks.
 
 <img width="1947" height="444" alt="image" src="https://github.com/user-attachments/assets/a153db86-bebd-4152-95b7-431c28b546b4" />
