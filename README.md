@@ -10,11 +10,11 @@
 <table style="width: 100%; border-collapse: collapse; border: none;">
   <tr style="border: none;">
     <td style="width: 50%; border: none; padding: 5px;">
-      <img src="https://github.com/user-attachments/assets/a01df9ce-a4b4-4aaa-92cf-7857999c3fcb" alt="Drivers Dashboard" style="width: 100%;">
+      <img src="assets/screenshots/Team_Standings.png" alt="Drivers Dashboard" style="width: 100%;">
       <p align="center"><b>Teams Dashboard</b></p>
     </td>
     <td style="width: 50%; border: none; padding: 5px;">
-      <img src="https://github.com/user-attachments/assets/2bed21d4-01cc-4a78-856e-b1bf1ccfb72b" alt="Teams Dashboard" style="width: 100%;">
+      <img src="assets/screenshots/Driver_Standings.png" alt="Teams Dashboard" style="width: 100%;">
       <p align="center"><b>Drivers Dashboard</b></p>
     </td>
   </tr>
