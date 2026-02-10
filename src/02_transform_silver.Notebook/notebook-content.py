@@ -41,13 +41,15 @@ from pyspark.sql.functions import (
 )
 from pyspark.sql.window import Window 
 
-# 0. Spark Configuration
+# 1. Spark Configuration
 spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
-PATH_BRONZE = "Files/bronze/"
+# 2. DYNAMIC PATHS
+PATH_BRONZE = f"Files/bronze/{YEAR_PARAM}/" 
 PATH_SILVER = "Files/silver/" 
 
-print("CONFIG READY.")
+print(f"CONFIG READY. Processing Year: {YEAR_PARAM}")
+print(f"Reading from: {PATH_BRONZE}")
 
 # METADATA ********************
 
