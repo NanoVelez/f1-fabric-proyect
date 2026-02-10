@@ -71,6 +71,75 @@ The data flows from the API through a structured Lakehouse architecture:
 - [x] **Phase 5: Final Dashboard in Power BI**
     - [x] Driver Championship Data
     - [x] Constructor Championship Data
+     
+---
+
+## 🛠️ Deep Dive: Architecture & Business Logic
+
+### 1. Ingestion & Orchestration (The Pipeline)
+The workflow begins with the total automation of the data lifecycle. This is not just a collection of scripts; it is a resilient process orchestrated natively within **Microsoft Fabric**.
+
+* **Data Factory Orchestration:** A master pipeline manages dependencies, ensuring the **Silver** process only triggers if **Bronze** succeeds, maintaining referential integrity from the start.
+* **API Limit Handling:** The ingestion layer is built to handle paginated requests and respect rate limits from the OpenF1 API, preventing data loss or connection blocks.
+
+<img width="1947" height="444" alt="image" src="https://github.com/user-attachments/assets/a153db86-bebd-4152-95b7-431c28b546b4" />
+
+
+---
+
+### 2. Silver Layer: Data Quality & "Edge Cases"
+This is where the engineering value shines. F1 data is notoriously chaotic—drivers switch teams, races get cancelled, and teams undergo rebranding.
+
+####  Team-Switch Proof (Mid-Season Transfers)
+* **The Problem:** A driver (e.g., Ricciardo/Lawson in 2023) can change teams mid-year. A simple JOIN on `Driver_Key` would duplicate records or lose historical context.
+* **The Solution:** I implemented a **Dynamic Normalization** logic. Results are bound to a unique combination of `Race_Key` + `Driver_Key` + `Team_Key`. This ensures a driver's history remains intact regardless of the colors they wore in a specific Grand Prix.
+
+####  Data Cleansing & Deduplication
+* Leveraging **PySpark** `dropDuplicates()` functions based on sensor timestamps to ensure the Silver layer only stores a "Single Source of Truth," even if the source API sends redundant telemetry.
+
+---
+
+### 3. Gold Layer: Star Schema Modeling
+The semantic model is optimized for **Direct Lake** mode, eliminating the need for manual refreshes and providing sub-second performance directly over OneLake.
+
+* **Fact Tables:** Store granular metrics such as race positions, points, and lap times.
+* **Dimension Tables:** Descriptive attributes for drivers, teams, circuits, and the racing calendar.
+* **Relationships:** Protected 1:N relationships prevent ambiguity; filtering by a Team correctly displays every driver who has competed for that constructor.
+
+<img width="1684" height="931" alt="image" src="https://github.com/user-attachments/assets/7ecaec97-5f71-419c-8b89-ef36f20c5f1e" />
+
+
+---
+
+### 4. Advanced DAX: The "Memory Effect"
+For a professional-grade dashboard, trend lines must remain continuous even if a team lacks data for a specific GP or a race is cancelled.
+
+```dax
+-- Logic for Team Ranking Persistence (Forward Fill)
+Team_Ranks = 
+CALCULATE(
+    LASTNONBLANKVALUE(
+        gold_dim_race[Date],
+        MAX(gold_fact_team_results[World_Position])
+    ),
+    REMOVEFILTERS(gold_dim_race),
+    gold_dim_race[Date] <= MAX(gold_dim_race[Date]),
+    VALUES(gold_dim_race[Year]) -- Prevents historical team overlap
+)
+```
+---
+
+### 5. Visualization & UX (User Experience)
+The report is designed for high-level competitive analysis, moving beyond simple data tables.
+
+#### Deneb & Vega-Lite:
+* Implementation of custom visuals to display time densities and dynamic rankings.
+
+####  Interactive Season Timeline
+* To provide a truly immersive experience, I implemented a **Dynamic Timeline** that allows you to "replay" the season.
+
+* **Temporal Storytelling:** The timeline doesn't just filter data; it recalculates the entire state of the championship at any given point in time.
+---
 
 ## 💻 How to Run & Deploy
 
