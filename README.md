@@ -99,6 +99,11 @@ This is where the engineering value shines. F1 data is notoriously chaotic—dri
 * **The Problem:** A driver (e.g., Ricciardo/Lawson in 2023) can change teams mid-year. A simple JOIN on `Driver_Key` would duplicate records or lose historical context.
 * **The Solution:** I implemented a **Dynamic Normalization** logic. Results are bound to a unique combination of `Race_Key` + `Driver_Key` + `Team_Key`. This ensures a driver's history remains intact regardless of the colors they wore in a specific Grand Prix.
 
+####  Custom Data Enrichment:
+* **The Problem:** The OpenF1 API occasionally lacks standardized short codes for Grand Prix names, which are essential for clean visualizations and axis labels.
+* **The Solution:** I engineered a custom mapping logic to generate consistent **3-letter Alpha Codes** (e.g., `MON` for Monaco, `SPA` for Spain). 
+* **Impact:** This enrichment ensures that drivers charts remain visually consistent and readable, regardless of the raw naming conventions provided by the source API.
+
 ####  Data Cleansing & Deduplication
 * Leveraging **PySpark** `dropDuplicates()` functions based on sensor timestamps to ensure the Silver layer only stores a "Single Source of Truth," even if the source API sends redundant telemetry.
 
