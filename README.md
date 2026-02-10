@@ -82,7 +82,7 @@ The workflow begins with the total automation of the data lifecycle. This is not
 * **Data Factory Orchestration:** A master pipeline manages dependencies, ensuring the **Silver** process only triggers if **Bronze** succeeds, maintaining referential integrity from the start.
 * **API Limit Handling:** The ingestion layer is built to handle paginated requests and respect rate limits from the OpenF1 API, preventing data loss or connection blocks.
 
-<img width="1947" height="444" alt="image" src="https://github.com/user-attachments/assets/a153db86-bebd-4152-95b7-431c28b546b4" />
+<img width="1947" height="444" alt="image" src="assets/screenshots/Pipeline.png" />
 
 * **Dynamic Parameterization (Variables & Parameters):** To achieve full automation and multi-season support, I implemented a **Parameter-Driven Architecture**. 
     * **Automated Yearly Ingestion:** Instead of hard-coding values, the pipeline uses **Pipeline Variables** to store the `Year`. 
@@ -115,7 +115,7 @@ The semantic model is optimized for **Direct Lake** mode, eliminating the need f
 * **Dimension Tables:** Descriptive attributes for drivers, teams, circuits, and the racing calendar.
 * **Relationships:** Protected 1:N relationships prevent ambiguity; filtering by a Team correctly displays every driver who has competed for that constructor.
 
-<img width="1684" height="931" alt="image" src="https://github.com/user-attachments/assets/7ecaec97-5f71-419c-8b89-ef36f20c5f1e" />
+<img width="1684" height="931" alt="image" src="assets/screenshots/Model.png" />
 
 
 ---
@@ -147,7 +147,7 @@ The report is designed for high-level competitive analysis, moving beyond simple
 ####  Interactive Season Timeline
 * To provide a truly immersive experience, I implemented a **Dynamic Timeline** that allows you to "replay" the season.
 
-![Timeline](https://github.com/user-attachments/assets/74604975-9669-4700-9758-ba6250a96fd6)
+![Timeline](assets/screenshots/Timeline.gif)
 
 
 
