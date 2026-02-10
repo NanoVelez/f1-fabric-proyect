@@ -17,7 +17,10 @@
                 "workspaceId": "00000000-0000-0000-0000-000000000000",
                 "parameters": {
                   "YEAR": {
-                    "value": "@item()",
+                    "value": {
+                      "value": "@item()",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   }
                 }
@@ -39,7 +42,10 @@
                 "workspaceId": "00000000-0000-0000-0000-000000000000",
                 "parameters": {
                   "YEAR_PARAM": {
-                    "value": "@item()",
+                    "value": {
+                      "value": "@item()",
+                      "type": "Expression"
+                    },
                     "type": "string"
                   }
                 }
@@ -124,9 +130,9 @@
       "YearsToProcess": {
         "type": "array",
         "defaultValue": [
-          2022,
           2023,
-          2024
+          2024,
+          2025
         ]
       }
     },
