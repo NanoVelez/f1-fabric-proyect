@@ -6,6 +6,21 @@
 
 </div>
 
+<img width="2248" height="1132" alt="image" src="https://github.com/user-attachments/assets/6ec220b7-eff4-4144-ba27-fa1267ca2f62" />
+<table style="width: 100%; border-collapse: collapse; border: none;">
+  <tr style="border: none;">
+    <td style="width: 50%; border: none; padding: 5px;">
+      <img src="https://github.com/user-attachments/assets/a01df9ce-a4b4-4aaa-92cf-7857999c3fcb" alt="Drivers Dashboard" style="width: 100%;">
+      <p align="center"><b>Teams Dashboard</b></p>
+    </td>
+    <td style="width: 50%; border: none; padding: 5px;">
+      <img src="https://github.com/user-attachments/assets/2bed21d4-01cc-4a78-856e-b1bf1ccfb72b" alt="Teams Dashboard" style="width: 100%;">
+      <p align="center"><b>Drivers Dashboard</b></p>
+    </td>
+  </tr>
+</table>
+
+
 ## 📖 Project Overview
 This personal project aims to build a complete **End-to-End Data Pipeline** using **Microsoft Fabric**. The system ingests historical Formula 1 data, processes it following the Medallion Architecture (Bronze, Silver, Gold), and serves it for analytical reporting.
 
