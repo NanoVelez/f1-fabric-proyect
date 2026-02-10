@@ -1,4 +1,4 @@
-# 🏎️ Formula 1 End-to-End Data Pipeline
+# Formula 1 End-to-End Data Pipeline
 
 <div align="center">
 
@@ -21,12 +21,12 @@
 </table>
 
 
-## 📖 Project Overview
+## Project Overview
 This personal project aims to build a complete **End-to-End Data Pipeline** using **Microsoft Fabric**. The system ingests historical Formula 1 data, processes it following the Medallion Architecture (Bronze, Silver, Gold), and serves it for analytical reporting.
 
 The main goal is to apply **DP-700 (Fabric Data Engineer)** certification concepts in a real-world scenario.
 
-## 🏗️ Architecture (Medallion)
+## Architecture (Medallion)
 The data flows from the API through a structured Lakehouse architecture:
 
 <div align="center">
@@ -39,7 +39,7 @@ The data flows from the API through a structured Lakehouse architecture:
 
 * **Gold (Curated):** Business-level aggregations and Dimensional Modeling (Star Schema).
 
-## ⚙️ Tech Stack
+## Tech Stack
 * **Cloud Platform:** Microsoft Fabric (Data Engineering & Data Warehouse).
 
 * **Storage:** OneLake (ADLS Gen2).
@@ -50,7 +50,7 @@ The data flows from the API through a structured Lakehouse architecture:
 
 * **Source:** OpenF1 API.
 
-## 🚀 Roadmap & Progress
+## Roadmap & Progress
 - [x] **Phase 1: Environment Setup (Fabric + GitHub)**
 
 - [x] **Phase 2: Ingestion (Bronze)**
@@ -74,7 +74,7 @@ The data flows from the API through a structured Lakehouse architecture:
      
 ---
 
-## 🛠️ Deep Dive: Architecture & Business Logic
+## Deep Dive: Architecture & Business Logic
 
 ### 1. Ingestion & Orchestration (The Pipeline)
 The workflow begins with the total automation of the data lifecycle. This is not just a collection of scripts; it is a resilient process orchestrated natively within **Microsoft Fabric**.
@@ -162,7 +162,7 @@ The report is designed for high-level competitive analysis, moving beyond simple
 
 ---
 
-## 💎 Future Enhancements
+## Future Enhancements
 
 To further evolve this platform from a descriptive dashboard to a predictive analytics tool, the following features are planned:
 
