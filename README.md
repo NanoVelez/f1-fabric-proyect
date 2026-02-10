@@ -138,8 +138,18 @@ The report is designed for high-level competitive analysis, moving beyond simple
 ####  Interactive Season Timeline
 * To provide a truly immersive experience, I implemented a **Dynamic Timeline** that allows you to "replay" the season.
 
+![Timeline](https://github.com/user-attachments/assets/74604975-9669-4700-9758-ba6250a96fd6)
+
+
+
 * **Temporal Storytelling:** The timeline doesn't just filter data; it recalculates the entire state of the championship at any given point in time.
 ---
+
+### Driver Championship Standings
+The view below provides a deep dive into individual performance, tracking the evolution of the title race with a focus on consistency and head-to-head metrics.
+
+<img width="2048" height="1140" alt="image" src="https://github.com/user-attachments/assets/557fac85-161e-4cbb-a41e-276d6a9c43de" />
+
 
 ## 💻 How to Run & Deploy
 
