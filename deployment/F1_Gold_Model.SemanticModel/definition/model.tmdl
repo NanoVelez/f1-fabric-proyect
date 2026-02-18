@@ -11,7 +11,7 @@ annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBI_QueryOrder = ["DatabaseQuery"]
 
-annotation PBI_ProTooling = ["WebModelingEdit"]
+annotation PBI_ProTooling = ["SLL", "WebModelingEdit", "SLL_UpdateDLConnection_SQL"]
 
 ref table gold_fact_driver_results
 ref table gold_fact_team_results
