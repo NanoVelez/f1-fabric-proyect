@@ -1,0 +1,136 @@
+table gold_fact_team_results
+	lineageTag: 2bf5b417-fe98-4904-807d-8771244f6d17
+	sourceLineageTag: [dbo].[gold_fact_team_results]
+
+	measure Team_Points = ```
+			
+			VAR Fecha_Corte = MAX('gold_ui_play_timeline'[Date])
+			
+			RETURN
+			    CALCULATE(
+			        MAX(gold_fact_team_results[Season_Points]), 
+			        gold_dim_race[Date] <= Fecha_Corte
+			    )
+			```
+		formatString: " 0.######"
+		lineageTag: e0b18264-39cd-4788-a789-4612b374b430
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure Team_Ranks = ```
+			
+			VAR FechaPlay = MAX('gold_ui_play_timeline'[Date])
+			VAR HayJuego = ISFILTERED('gold_ui_play_timeline')
+			
+			VAR FechaCorte = 
+			    IF(
+			        HayJuego, 
+			        FechaPlay, 
+			        MAX(gold_dim_race[Date]) 
+			    )
+			
+			RETURN
+			    CALCULATE(
+			        LASTNONBLANKVALUE(
+			            gold_dim_race[Date],
+			            MAX(gold_fact_team_results[World_Position])
+			        ),
+			        REMOVEFILTERS(gold_dim_race),
+			        gold_dim_race[Date] <= FechaCorte,
+			        VALUES(gold_dim_race[Year])
+			    )
+			```
+		formatString: 0
+		lineageTag: 51edf90a-3a56-49d3-8283-cb5977a22cdf
+
+		changedProperty = Name
+
+	column Race_Points
+		dataType: double
+		isHidden
+		sourceProviderType: real
+		lineageTag: de566169-56da-4f09-ac68-335c49062100
+		sourceLineageTag: Race_Points
+		summarizeBy: sum
+		sourceColumn: Race_Points
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Season_Points
+		dataType: double
+		sourceProviderType: real
+		lineageTag: 4520f1f0-840a-4bb2-a40e-493fa967cfd3
+		sourceLineageTag: Season_Points
+		summarizeBy: max
+		sourceColumn: Season_Points
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column World_Position
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 6af5e220-9468-4c09-a6a0-4b4e79701ed5
+		sourceLineageTag: World_Position
+		summarizeBy: none
+		sourceColumn: World_Position
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Race_Key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: a36c6bff-7062-4a80-8233-05c7be6509f0
+		sourceLineageTag: Race_Key
+		summarizeBy: none
+		sourceColumn: Race_Key
+
+		changedProperty = SummarizeBy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column Team_Key
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 75f5c32a-7dd2-4d71-ab5a-121d0802e4c0
+		sourceLineageTag: Team_Key
+		summarizeBy: none
+		sourceColumn: Team_Key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_fact_team_results = entity
+		mode: directLake
+		source
+			entityName: gold_fact_team_results
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+
