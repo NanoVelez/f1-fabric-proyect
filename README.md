@@ -209,8 +209,8 @@ To replicate this Formula 1 data project in your own Microsoft Fabric environmen
 2. In the "Explorer" side panel select f1_lh Lakehouse.
 
 <p align="center">
-  <img width="350" alt="Explorer_panel" src="assets/screenshots/Explorer_panel.png" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img width="250" alt="Explorer_panel" src="assets/screenshots/Explorer_panel.png" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img width="600" alt="Lakehouse_Select" src="assets/screenshots/Lakehouse_Select.png" />
 </p>
 
