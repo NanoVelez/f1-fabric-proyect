@@ -186,25 +186,41 @@ To further evolve this platform from a descriptive dashboard to a predictive ana
 
 ---
 
-## How to Run & Deploy
+### Quick Deployment Guide
 
-This project is built to run natively inside a **Microsoft Fabric Workspace**.
+To replicate this Formula 1 data project in your own Microsoft Fabric environment, follow these sequential steps:
 
-### 1. Environment Setup
-1.  Create a new **Fabric Workspace** (with Trial or Capaciity enabled).
-2.  Go to **Workspace Settings > Git Integration**.
-3.  Connect this repository and click **Sync** or **Connect**. This will automatically import all Notebooks and Pipelines.
+#### Step 1: Source Code Synchronization
+**Why do we start by synchronizing the main branch and the deployment folder?** This ensures that the target environment only imports the stable version and production ready scripts.
+1. Open your Fabric Workspace and navigate to the Git integration settings.
+2. Connect this repository, select the `main` branch, and sync the `deployment/` folder.
 
-### 2. Data Ingestion (Orchestration)
-Instead of running notebooks manually, trigger the master pipeline to handle dependencies:
-1.  Open the pipeline named **`Data Pipe`**.
-2.  Click **Run**.
-    * *This will execute the Bronze (Ingestion) -> Silver (Transformation) -> Gold (Modeling) notebooks in sequence.*
+#### Step 2: Orchestrator Preparation (Data Pipeline)
+**What do we achieve by downloading this ZIP file first?** Fabric data pipelines contain very specific internal IDs that block direct synchronization via Git if they don't match the destination workspace. Downloading it allows us to import it manually later.
+1. Go to the file view in your repository (or via the Fabric interface).
+2. Download the `data_pipe.zip` file to your local machine.
 
-### 3. Visualization
-1.  **Open the F1_Gold_Model (Semantic Model) in your workspace.**
-2.  **Go to Settings and ensure it is pointing to your newly created lh_f1 Lakehouse.**
-3.  **Open the F1_Data_Analytics_Platform (Report).**
+#### Step 3: Lakehouse Binding in Notebooks
+**Why is it vital to change the Data Source?** When cloning the project into a new Workspace, the notebooks "lose" the physical path to the data. We need to tell them exactly where to read and write.
+1. Open each of the imported Notebooks.
+2. In the "Explorer" side panel select f1_lh Lakehouse.
+
+#### Step 4: Semantic Model Configuration (Master Setup)
+**What is the purpose of executing this master notebook?** Instead of manually creating and reconnecting the Power BI model, this Python script automates the "Direct Lake" connection between your local data and the semantic model, repairing any links broken during the Git import.
+1. Open the `00_Master_Setup` notebook.
+2. Run all cells. You will see console messages indicating that the model has successfully synchronized with your Lakehouse.
+
+#### Step 5: Pipeline Import and wiring
+**How do we connect all the automated pieces together?** By importing the ZIP file and updating its sources so the orchestrator knows exactly which notebooks to execute in this new workspace.
+1. In your Workspace, click on **New > Data Pipeline**.
+2. In the top menu, use the **Import pipeline** option and upload your `data_pipe.zip`.
+3. The system will prompt you to create a connection for the "Semantic Model Refresh" step. Authorize it with your credentials.
+4. Select each activity box in the pipeline and, in the "Settings" tab, make sure to select the correct notebooks from your Workspace.
+
+#### Step 6: Final Execution and Visualization
+**What is the final result of all this infrastructure?** Watching the data flow seamlessly from the API all the way to the report in a fully automated manner.
+1. Click **Run** on the Data Pipeline and wait for all activities to finish successfully.
+2. Once finished, open the visual report. The data will now be ingested, transformed, and ready for analysis!
 
 ---
 
