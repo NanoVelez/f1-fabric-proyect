@@ -37,6 +37,7 @@ import requests
 import json
 from notebookutils import mssparkutils
 import time
+import sys
 
 # --- CONFIGURATION ---
 
@@ -56,18 +57,42 @@ except:
 # --- 2. DATA PREPARATION ---
 print("Loading catalog...")
 
-# A. Get all RACE sessions first
+# A. API CHECK
+def check_api_status():
+    """Realiza un 'ping' rápido a la API para ver si está en periodo de bloqueo."""
+    test_url = f"{BASE_URL}/meetings?year={YEAR}"
+    try:
+        response = requests.get(test_url, timeout=10)
+        if response.status_code == 200:
+            print("API check successful. OpenF1 is available.")
+            return True
+        elif response.status_code == 429: # Too Many Requests 
+             print(f"API is currently rate-limited or blocked (Status {response.status_code}).")
+             return False
+        else:
+             print(f"Unexpected API response status: {response.status_code}.")
+             return False
+    except requests.exceptions.RequestException as e:
+        print(f"Error connecting to API: {e}")
+        return False
+
+if not check_api_status():
+    error_msg = "Pipeline aborted: OpenF1 API is currently unavailable. A live session is likely in progress, putting the API in restricted mode."
+    print(error_msg)
+    raise Exception(error_msg)
+
+# B. Get all RACE sessions first
 races_raw = requests.get(f"{BASE_URL}/sessions?year={YEAR}&session_type=Race").json()
 race_lookup = {r['meeting_key']: r['session_key'] for r in races_raw}
 
-# B. Get all MEETINGS
+# C. Get all MEETINGS
 meetings = requests.get(f"{BASE_URL}/meetings?year={YEAR}").json()
 meetings_sorted = sorted(meetings, key=lambda x: x['date_start'])
 
 print(f"Found {len(meetings_sorted)} scheduled events.")
 print("Starting ingestion...\n")
 
-# --- 3. MAIN LOOP (Events) ---
+# --- 3. MAIN LOOP ---
 round_counter = 1
 
 for meeting in meetings_sorted:
@@ -91,7 +116,7 @@ for meeting in meetings_sorted:
     
     try:
         # ==========================================
-        # 1. GENERAL DOWNLOADS (With pauses)
+        # 1. GENERAL DOWNLOADS
         # ==========================================
         
         # Drivers Standings
@@ -110,7 +135,7 @@ for meeting in meetings_sorted:
         time.sleep(0.5) 
 
         # ==========================================
-        # 2. RESULTS AND SESSIONS (With validation and pauses)
+        # 2. RESULTS AND SESSIONS
         # ==========================================
 
         # A. Download ALL sessions for this GP
