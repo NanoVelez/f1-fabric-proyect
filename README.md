@@ -252,7 +252,7 @@ f1-fabric-proyect/
 ├── 📂 assets/                  # Static resources for UI & Documentation
 │   ├── 📂 teams/               # Team logos and assets for Power BI
 │   └── 📂 screenshots/         # Images used in this README
-├── 📂 deployment/              # Stable version to imoprt
+├── 📂 deployment/              # Stable version to import
 ├── 📂 src/                     # Source Code (Fabric Notebooks & ETL)
 ├── .gitignore 
 ├── LICENSE                     # Git configuration
