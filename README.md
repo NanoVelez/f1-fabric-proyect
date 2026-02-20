@@ -247,7 +247,7 @@ To replicate this Formula 1 data project in your own Microsoft Fabric environmen
 
 ## 📂 Project Structure
 ```text
-f1-fabric-proyect/
+f1-data-engineering-platform/
 │
 ├── 📂 assets/                  # Static resources for UI & Documentation
 │   ├── 📂 teams/               # Team logos and assets for Power BI
