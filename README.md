@@ -186,7 +186,7 @@ To further evolve this platform from a descriptive dashboard to a predictive ana
 
 ---
 
-### Quick Deployment Guide
+## Quick Deployment Guide
 
 To replicate this Formula 1 data project in your own Microsoft Fabric environment, follow these sequential steps:
 
